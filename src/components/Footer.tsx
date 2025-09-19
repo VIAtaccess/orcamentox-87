@@ -1,6 +1,7 @@
 import React from 'react';
 import { Facebook, Instagram, Linkedin, Mail, Phone, MapPin } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import logoHorizontal from '@/assets/logo-horizontal.png';
 const Footer = () => {
   return <footer className="bg-gray-900 text-white">
       {/* Main Footer */}
@@ -10,7 +11,7 @@ const Footer = () => {
           <div className="lg:col-span-1">
             <div className="mb-6">
               <div className="bg-white rounded-lg p-3 inline-block">
-                <img src="/src/assets/logo-horizontal.png" alt="OrcamentoX" className="h-28 w-auto" />
+                <img src={logoHorizontal} alt="OrcamentoX" className="h-28 w-auto" />
               </div>
             </div>
             <p className="text-gray-300 mb-6 leading-relaxed">
