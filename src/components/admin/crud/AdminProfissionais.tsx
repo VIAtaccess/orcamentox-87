@@ -144,74 +144,71 @@ export function AdminProfissionais() {
           <CardTitle>Lista de Profissionais ({profissionais?.count || 0})</CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Profissional</TableHead>
-                <TableHead>Categoria</TableHead>
-                <TableHead>Localização</TableHead>
-                <TableHead>Avaliação</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Verificado</TableHead>
-                <TableHead>Cadastro</TableHead>
-                <TableHead>Ações</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {profissionais?.data?.map((profissional: any) => (
-                <TableRow key={profissional.id}>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={profissional.foto_url} />
-                        <AvatarFallback>{profissional.nome.charAt(0)}</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <div className="font-medium">{profissional.nome}</div>
-                        <div className="text-sm text-gray-500">{profissional.email}</div>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline">{profissional.categoria || 'Não definida'}</Badge>
-                  </TableCell>
-                  <TableCell>{`${profissional.cidade || '-'}/${profissional.uf || '-'}`}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1">
-                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                      <span>{Number(profissional.nota_media || 0).toFixed(1)}</span>
-                      <span className="text-sm text-gray-500">
-                        ({profissional.total_avaliacoes || 0})
-                      </span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={profissional.ativo ? 'default' : 'destructive'}>
-                      {profissional.ativo ? 'Ativo' : 'Inativo'}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    {profissional.verificado ? (
-                      <CheckCircle className="h-5 w-5 text-green-600" />
-                    ) : (
-                      <Badge variant="secondary">Pendente</Badge>
-                    )}
-                  </TableCell>
-                  <TableCell>{new Date(profissional.created_at).toLocaleDateString('pt-BR')}</TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <Button variant="ghost" size="sm" onClick={() => handleEdit(profissional)}>
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleDelete(profissional.id)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="min-w-[200px]">Profissional</TableHead>
+                  <TableHead className="min-w-[120px]">Categoria</TableHead>
+                  <TableHead className="min-w-[100px]">Localização</TableHead>
+                  <TableHead className="min-w-[80px]">Avaliação</TableHead>
+                  <TableHead className="min-w-[80px]">Status</TableHead>
+                  <TableHead className="min-w-[80px]">Verificado</TableHead>
+                  <TableHead className="min-w-[80px]">Ações</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {profissionais?.data?.map((profissional: any) => (
+                  <TableRow key={profissional.id}>
+                    <TableCell className="min-w-[200px]">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-8 w-8 flex-shrink-0">
+                          <AvatarImage src={profissional.foto_url} />
+                          <AvatarFallback>{profissional.nome.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <div className="font-medium truncate">{profissional.nome}</div>
+                          <div className="text-sm text-gray-500 truncate">{profissional.email}</div>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="max-w-[120px]">
+                      <Badge variant="outline" className="truncate">{profissional.categoria || 'N/D'}</Badge>
+                    </TableCell>
+                    <TableCell className="max-w-[100px] truncate">{`${profissional.cidade || '-'}/${profissional.uf || '-'}`}</TableCell>
+                    <TableCell className="min-w-[80px]">
+                      <div className="flex items-center gap-1">
+                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                        <span className="text-sm">{Number(profissional.nota_media || 0).toFixed(1)}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={profissional.ativo ? 'default' : 'destructive'}>
+                        {profissional.ativo ? 'Ativo' : 'Inativo'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {profissional.verificado ? (
+                        <CheckCircle className="h-5 w-5 text-green-600" />
+                      ) : (
+                        <Badge variant="secondary">Pendente</Badge>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex gap-1">
+                        <Button variant="ghost" size="sm" onClick={() => handleEdit(profissional)}>
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => handleDelete(profissional.id)}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
           
           {totalPages > 1 && (
             <div className="flex justify-center gap-2 mt-4">

@@ -118,51 +118,51 @@ export function AdminClientes() {
           <CardTitle>Lista de Clientes ({clientes?.count || 0})</CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Nome</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>WhatsApp</TableHead>
-                <TableHead>Cidade/UF</TableHead>
-                <TableHead>Tipo</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Cadastro</TableHead>
-                <TableHead>Ações</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {clientes?.data?.map((cliente: any) => (
-                <TableRow key={cliente.id}>
-                  <TableCell className="font-medium">{cliente.nome}</TableCell>
-                  <TableCell>{cliente.email}</TableCell>
-                  <TableCell>{cliente.whatsapp || '-'}</TableCell>
-                  <TableCell>{`${cliente.cidade || '-'}/${cliente.uf || '-'}`}</TableCell>
-                  <TableCell>
-                    <Badge variant={cliente.tipo_pessoa === 'juridica' ? 'default' : 'secondary'}>
-                      {cliente.tipo_pessoa === 'juridica' ? 'PJ' : 'PF'}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={cliente.ativo ? 'default' : 'destructive'}>
-                      {cliente.ativo ? 'Ativo' : 'Inativo'}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{new Date(cliente.created_at).toLocaleDateString('pt-BR')}</TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <Button variant="ghost" size="sm" onClick={() => handleEdit(cliente)}>
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleDelete(cliente)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="min-w-[150px]">Nome</TableHead>
+                  <TableHead className="min-w-[200px]">Email</TableHead>
+                  <TableHead className="min-w-[120px]">WhatsApp</TableHead>
+                  <TableHead className="min-w-[100px]">Localização</TableHead>
+                  <TableHead className="min-w-[60px]">Tipo</TableHead>
+                  <TableHead className="min-w-[80px]">Status</TableHead>
+                  <TableHead className="min-w-[80px]">Ações</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {clientes?.data?.map((cliente: any) => (
+                  <TableRow key={cliente.id}>
+                    <TableCell className="font-medium max-w-[150px] truncate">{cliente.nome}</TableCell>
+                    <TableCell className="max-w-[200px] truncate">{cliente.email}</TableCell>
+                    <TableCell className="max-w-[120px] truncate">{cliente.whatsapp || '-'}</TableCell>
+                    <TableCell className="max-w-[100px] truncate">{`${cliente.cidade || '-'}/${cliente.uf || '-'}`}</TableCell>
+                    <TableCell>
+                      <Badge variant={cliente.tipo_pessoa === 'juridica' ? 'default' : 'secondary'}>
+                        {cliente.tipo_pessoa === 'juridica' ? 'PJ' : 'PF'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={cliente.ativo ? 'default' : 'destructive'}>
+                        {cliente.ativo ? 'Ativo' : 'Inativo'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex gap-1">
+                        <Button variant="ghost" size="sm" onClick={() => handleEdit(cliente)}>
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => handleDelete(cliente)}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
           
           {totalPages > 1 && (
             <div className="flex justify-center gap-2 mt-4">

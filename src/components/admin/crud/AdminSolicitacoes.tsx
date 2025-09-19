@@ -168,63 +168,59 @@ export function AdminSolicitacoes() {
           <CardTitle>Lista de Solicitações ({solicitacoes?.count || 0})</CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Título</TableHead>
-                <TableHead>Cliente</TableHead>
-                <TableHead>Localização</TableHead>
-                <TableHead>Orçamento</TableHead>
-                <TableHead>Urgência</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Criado em</TableHead>
-                <TableHead>Ações</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {solicitacoes?.data?.map((solicitacao: any) => (
-                <TableRow key={solicitacao.id}>
-                  <TableCell className="font-medium max-w-xs truncate">
-                    {solicitacao.titulo}
-                  </TableCell>
-                  <TableCell>
-                    <div>
-                      <div className="font-medium">{solicitacao.nome_cliente || 'N/A'}</div>
-                      <div className="text-sm text-gray-500">{solicitacao.email_cliente}</div>
-                    </div>
-                  </TableCell>
-                  <TableCell>{`${solicitacao.cidade}/${solicitacao.uf}`}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline">{solicitacao.orcamento_estimado || 'Não informado'}</Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={getUrgenciaColor(solicitacao.urgencia)}>
-                      {solicitacao.urgencia?.charAt(0).toUpperCase() + solicitacao.urgencia?.slice(1) || 'Média'}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={getStatusColor(solicitacao.status)}>
-                      {solicitacao.status?.charAt(0).toUpperCase() + solicitacao.status?.slice(1) || 'Ativa'}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{new Date(solicitacao.created_at).toLocaleDateString('pt-BR')}</TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <Button variant="ghost" size="sm" onClick={() => handleView(solicitacao)}>
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleEdit(solicitacao)}>
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleDelete(solicitacao.id)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="min-w-[200px]">Título</TableHead>
+                  <TableHead className="min-w-[180px]">Cliente</TableHead>
+                  <TableHead className="min-w-[100px]">Localização</TableHead>
+                  <TableHead className="min-w-[80px]">Urgência</TableHead>
+                  <TableHead className="min-w-[80px]">Status</TableHead>
+                  <TableHead className="min-w-[100px]">Ações</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {solicitacoes?.data?.map((solicitacao: any) => (
+                  <TableRow key={solicitacao.id}>
+                    <TableCell className="font-medium max-w-[200px] truncate">
+                      {solicitacao.titulo}
+                    </TableCell>
+                    <TableCell className="min-w-[180px]">
+                      <div>
+                        <div className="font-medium truncate">{solicitacao.nome_cliente || 'N/A'}</div>
+                        <div className="text-sm text-gray-500 truncate">{solicitacao.email_cliente}</div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="max-w-[100px] truncate">{`${solicitacao.cidade}/${solicitacao.uf}`}</TableCell>
+                    <TableCell>
+                      <Badge variant={getUrgenciaColor(solicitacao.urgencia)}>
+                        {solicitacao.urgencia?.charAt(0).toUpperCase() + solicitacao.urgencia?.slice(1) || 'Média'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={getStatusColor(solicitacao.status)}>
+                        {solicitacao.status?.charAt(0).toUpperCase() + solicitacao.status?.slice(1) || 'Ativa'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex gap-1">
+                        <Button variant="ghost" size="sm" onClick={() => handleView(solicitacao)}>
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => handleEdit(solicitacao)}>
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => handleDelete(solicitacao.id)}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
           
           {totalPages > 1 && (
             <div className="flex justify-center gap-2 mt-4">

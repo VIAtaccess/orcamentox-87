@@ -68,83 +68,96 @@ export function CreateClienteModal({ open, onClose, onCreated }: CreateClienteMo
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>Novo Cliente</DialogTitle>
           <DialogDescription>Cadastre um novo cliente na plataforma.</DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="nome">Nome</Label>
-            <Input
-              id="nome"
-              value={formData.nome}
-              onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
-              required
-            />
-          </div>
-          
-          <div>
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              required
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="whatsapp">WhatsApp</Label>
-            <Input
-              id="whatsapp"
-              value={formData.whatsapp}
-              onChange={(e) => setFormData({ ...formData, whatsapp: e.target.value })}
-              placeholder="(11) 99999-9999"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="cidade">Cidade</Label>
-              <Input
-                id="cidade"
-                value={formData.cidade}
-                onChange={(e) => setFormData({ ...formData, cidade: e.target.value })}
-              />
-            </div>
-            <div>
-              <Label htmlFor="uf">UF</Label>
-              <Input
-                id="uf"
-                value={formData.uf}
-                onChange={(e) => setFormData({ ...formData, uf: e.target.value })}
-                maxLength={2}
-              />
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Informações Básicas */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-medium">Informações Básicas</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="nome">Nome *</Label>
+                <Input
+                  id="nome"
+                  value={formData.nome}
+                  onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="email">Email *</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="whatsapp">WhatsApp</Label>
+                <Input
+                  id="whatsapp"
+                  value={formData.whatsapp}
+                  onChange={(e) => setFormData({ ...formData, whatsapp: e.target.value })}
+                  placeholder="(11) 99999-9999"
+                />
+              </div>
+              <div>
+                <Label>Tipo de Pessoa</Label>
+                <Select value={formData.tipo_pessoa} onValueChange={(value) => setFormData({ ...formData, tipo_pessoa: value })}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="fisica">Pessoa Física</SelectItem>
+                    <SelectItem value="juridica">Pessoa Jurídica</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
 
-          <div>
-            <Label>Tipo de Pessoa</Label>
-            <Select value={formData.tipo_pessoa} onValueChange={(value) => setFormData({ ...formData, tipo_pessoa: value })}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="fisica">Pessoa Física</SelectItem>
-                <SelectItem value="juridica">Pessoa Jurídica</SelectItem>
-              </SelectContent>
-            </Select>
+          {/* Localização */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-medium">Localização</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="cidade">Cidade</Label>
+                <Input
+                  id="cidade"
+                  value={formData.cidade}
+                  onChange={(e) => setFormData({ ...formData, cidade: e.target.value })}
+                  placeholder="São Paulo"
+                />
+              </div>
+              <div>
+                <Label htmlFor="uf">UF</Label>
+                <Input
+                  id="uf"
+                  value={formData.uf}
+                  onChange={(e) => setFormData({ ...formData, uf: e.target.value })}
+                  maxLength={2}
+                  placeholder="SP"
+                />
+              </div>
+            </div>
           </div>
 
-          <div className="flex items-center justify-between">
-            <Label htmlFor="ativo">Cliente Ativo</Label>
-            <Switch
-              id="ativo"
-              checked={formData.ativo}
-              onCheckedChange={(checked) => setFormData({ ...formData, ativo: checked })}
-            />
+          {/* Configurações */}
+          <div className="space-y-4 pt-4 border-t">
+            <h3 className="text-lg font-medium">Configurações</h3>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="ativo">Cliente Ativo</Label>
+              <Switch
+                id="ativo"
+                checked={formData.ativo}
+                onCheckedChange={(checked) => setFormData({ ...formData, ativo: checked })}
+              />
+            </div>
           </div>
 
           <DialogFooter>

@@ -167,59 +167,59 @@ export function AdminPropostas() {
           <CardTitle>Lista de Propostas ({propostas?.count || 0})</CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Profissional</TableHead>
-                <TableHead>Solicitação</TableHead>
-                <TableHead>Valor</TableHead>
-                <TableHead>Prazo</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Materiais</TableHead>
-                <TableHead>Criação</TableHead>
-                <TableHead>Ações</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {propostas?.data?.map((proposta: any) => (
-                <TableRow key={proposta.id}>
-                  <TableCell className="font-medium">
-                    {proposta.profissionais?.nome || '-'}
-                  </TableCell>
-                  <TableCell className="max-w-xs truncate">
-                    Solicitação {proposta.solicitacao_id}
-                  </TableCell>
-                  <TableCell>
-                    {proposta.valor_proposto ? 
-                      `R$ ${parseFloat(proposta.valor_proposto).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` 
-                      : '-'
-                    }
-                  </TableCell>
-                  <TableCell>{proposta.prazo_estimado || '-'}</TableCell>
-                  <TableCell>{getStatusBadge(proposta.status)}</TableCell>
-                  <TableCell>
-                    <Badge variant={proposta.materiais_inclusos ? 'default' : 'secondary'}>
-                      {proposta.materiais_inclusos ? 'Inclusos' : 'Não inclusos'}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{new Date(proposta.created_at).toLocaleDateString('pt-BR')}</TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <Button variant="ghost" size="sm" onClick={() => handleView(proposta)}>
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleEdit(proposta)}>
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleDelete(proposta.id)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="min-w-[150px]">Profissional</TableHead>
+                  <TableHead className="min-w-[120px]">Solicitação</TableHead>
+                  <TableHead className="min-w-[100px]">Valor</TableHead>
+                  <TableHead className="min-w-[80px]">Prazo</TableHead>
+                  <TableHead className="min-w-[80px]">Status</TableHead>
+                  <TableHead className="min-w-[80px]">Materiais</TableHead>
+                  <TableHead className="min-w-[100px]">Ações</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {propostas?.data?.map((proposta: any) => (
+                  <TableRow key={proposta.id}>
+                    <TableCell className="font-medium max-w-[150px] truncate">
+                      {proposta.profissionais?.nome || '-'}
+                    </TableCell>
+                    <TableCell className="max-w-[120px] truncate">
+                      Sol. {proposta.solicitacao_id}
+                    </TableCell>
+                    <TableCell className="max-w-[100px] truncate">
+                      {proposta.valor_proposto ? 
+                        `R$ ${parseFloat(proposta.valor_proposto).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` 
+                        : '-'
+                      }
+                    </TableCell>
+                    <TableCell className="max-w-[80px] truncate">{proposta.prazo_estimado || '-'}</TableCell>
+                    <TableCell>{getStatusBadge(proposta.status)}</TableCell>
+                    <TableCell>
+                      <Badge variant={proposta.materiais_inclusos ? 'default' : 'secondary'}>
+                        {proposta.materiais_inclusos ? 'Sim' : 'Não'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex gap-1">
+                        <Button variant="ghost" size="sm" onClick={() => handleView(proposta)}>
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => handleEdit(proposta)}>
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => handleDelete(proposta.id)}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
           
           {totalPages > 1 && (
             <div className="flex justify-center gap-2 mt-4">
