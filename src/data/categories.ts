@@ -1,0 +1,280 @@
+import { 
+  LucideIcon, 
+  Wrench, 
+  Zap, 
+  Droplets, 
+  Paintbrush, 
+  Sparkles, 
+  Scissors, 
+  Car, 
+  Monitor, 
+  Home, 
+  Leaf, 
+  Snowflake, 
+  Hammer, 
+  Shield, 
+  Camera, 
+  Music, 
+  Book,
+  HardHat,
+  Lightbulb,
+  Drill,
+  Palette,
+  Package,
+  Sparkle,
+  ShieldCheck,
+  Settings,
+  Trees
+} from 'lucide-react';
+
+export type Subcategory = {
+  name: string;
+  slug: string;
+  description?: string;
+};
+
+export type Category = {
+  icon: LucideIcon;
+  name: string;
+  slug: string;
+  description: string;
+  color: string; // Tailwind class used currently; can be mapped to design tokens later
+  subcategories: Subcategory[];
+};
+
+export const categories: Category[] = [
+  {
+    icon: Wrench,
+    name: 'Reforma e Construção',
+    slug: 'reforma-construcao',
+    description: 'Pedreiros, marceneiros, arquitetos',
+    color: 'bg-blue-500',
+    subcategories: [
+      { name: 'Pedreiro', slug: 'reforma-construcao-pedreiro' },
+      { name: 'Marcenaria', slug: 'reforma-construcao-marcenaria' },
+      { name: 'Alvenaria', slug: 'reforma-construcao-alvenaria' },
+      { name: 'Gesso e Drywall', slug: 'reforma-construcao-gesso' },
+      { name: 'Impermeabilização', slug: 'reforma-construcao-impermeabilizacao' },
+      { name: 'Colocação de Pisos', slug: 'reforma-construcao-pisos' },
+      { name: 'Telhados', slug: 'reforma-construcao-telhados' },
+      { name: 'Arquitetura', slug: 'reforma-construcao-arquitetura' },
+      { name: 'Engenharia', slug: 'reforma-construcao-engenharia' },
+      { name: 'Serralheria', slug: 'reforma-construcao-serralheria' },
+    ],
+  },
+  {
+    icon: Zap,
+    name: 'Serviços Elétricos',
+    slug: 'servicos-eletricos',
+    description: 'Eletricistas, instalações',
+    color: 'bg-yellow-500',
+    subcategories: [
+      { name: 'Instalações Elétricas', slug: 'eletrica-instalacoes' },
+      { name: 'Manutenção Elétrica', slug: 'eletrica-manutencao' },
+      { name: 'Quadro de Força', slug: 'eletrica-quadro-de-forca' },
+      { name: 'Iluminação', slug: 'eletrica-iluminacao' },
+      { name: 'Aterramento', slug: 'eletrica-aterramento' },
+      { name: 'Padrão de Entrada', slug: 'eletrica-padrao-entrada' },
+      { name: 'Automação Residencial', slug: 'eletrica-automacao' },
+      { name: 'Cabeamento', slug: 'eletrica-cabeamento' },
+    ],
+  },
+  {
+    icon: Droplets,
+    name: 'Encanamento',
+    slug: 'encanamento',
+    description: 'Encanadores, hidráulica',
+    color: 'bg-blue-600',
+    subcategories: [
+      { name: 'Desentupimento', slug: 'encanamento-desentupimento' },
+      { name: 'Instalação de Louças', slug: 'encanamento-loucas' },
+      { name: 'Vazamentos', slug: 'encanamento-vazamentos' },
+      { name: 'Aquecedor a Gás', slug: 'encanamento-aquecedor-gas' },
+      { name: 'Caixa d’Água', slug: 'encanamento-caixa-dagua' },
+      { name: 'Hidráulica Geral', slug: 'encanamento-hidraulica' },
+    ],
+  },
+  {
+    icon: Paintbrush,
+    name: 'Pintura',
+    slug: 'pintura',
+    description: 'Pintores, decoração',
+    color: 'bg-green-500',
+    subcategories: [
+      { name: 'Pintura Residencial', slug: 'pintura-residencial' },
+      { name: 'Pintura Comercial', slug: 'pintura-comercial' },
+      { name: 'Textura', slug: 'pintura-textura' },
+      { name: 'Grafiato', slug: 'pintura-grafiato' },
+      { name: 'Papel de Parede', slug: 'pintura-papel-de-parede' },
+      { name: 'Massa Corrida', slug: 'pintura-massa-corrida' },
+    ],
+  },
+  {
+    icon: Sparkles,
+    name: 'Limpeza',
+    slug: 'limpeza',
+    description: 'Faxina, limpeza pós-obra',
+    color: 'bg-purple-500',
+    subcategories: [
+      { name: 'Pós-Obra', slug: 'limpeza-pos-obra' },
+      { name: 'Residencial', slug: 'limpeza-residencial' },
+      { name: 'Comercial', slug: 'limpeza-comercial' },
+      { name: 'Estofados', slug: 'limpeza-estofados' },
+      { name: 'Janelas e Vidros', slug: 'limpeza-vidros' },
+      { name: 'Jardinagem', slug: 'limpeza-jardinagem' },
+    ],
+  },
+  {
+    icon: Scissors,
+    name: 'Beleza e Estética',
+    slug: 'beleza-estetica',
+    description: 'Cabeleireiros, manicures',
+    color: 'bg-pink-500',
+    subcategories: [
+      { name: 'Cabeleireiro', slug: 'beleza-cabeleireiro' },
+      { name: 'Manicure e Pedicure', slug: 'beleza-manicure' },
+      { name: 'Maquiagem', slug: 'beleza-maquiagem' },
+      { name: 'Depilação', slug: 'beleza-depilacao' },
+      { name: 'Barbearia', slug: 'beleza-barbearia' },
+      { name: 'Sobrancelhas', slug: 'beleza-sobrancelhas' },
+    ],
+  },
+  {
+    icon: Car,
+    name: 'Automotivo',
+    slug: 'automotivo',
+    description: 'Mecânicos, funilaria',
+    color: 'bg-gray-600',
+    subcategories: [
+      { name: 'Mecânica Geral', slug: 'auto-mecanica' },
+      { name: 'Elétrica Automotiva', slug: 'auto-eletrica' },
+      { name: 'Funilaria e Pintura', slug: 'auto-funilaria' },
+      { name: 'Troca de Óleo', slug: 'auto-troca-oleo' },
+      { name: 'Ar-Condicionado', slug: 'auto-ar-condicionado' },
+      { name: 'Martelinho de Ouro', slug: 'auto-martelinho' },
+    ],
+  },
+  {
+    icon: Monitor,
+    name: 'Tecnologia',
+    slug: 'tecnologia',
+    description: 'Técnicos, desenvolvedores',
+    color: 'bg-indigo-500',
+    subcategories: [
+      { name: 'Suporte Técnico', slug: 'tech-suporte' },
+      { name: 'Desenvolvimento Web', slug: 'tech-dev-web' },
+      { name: 'Desenvolvimento Mobile', slug: 'tech-dev-mobile' },
+      { name: 'Redes e Infra', slug: 'tech-redes' },
+      { name: 'Segurança da Informação', slug: 'tech-seguranca' },
+      { name: 'Design UX/UI', slug: 'tech-design' },
+    ],
+  },
+  {
+    icon: Home,
+    name: 'Serviços Domésticos',
+    slug: 'servicos-domesticos',
+    description: 'Diaristas, cuidadoras, babás',
+    color: 'bg-orange-500',
+    subcategories: [
+      { name: 'Babá', slug: 'domestico-baba' },
+      { name: 'Cuidador de Idosos', slug: 'domestico-cuidador' },
+      { name: 'Passadeira', slug: 'domestico-passadeira' },
+      { name: 'Cozinheira', slug: 'domestico-cozinheira' },
+      { name: 'Organização', slug: 'domestico-organizacao' },
+    ],
+  },
+  {
+    icon: Leaf,
+    name: 'Jardinagem e Paisagismo',
+    slug: 'jardinagem-paisagismo',
+    description: 'Jardineiros, poda, gramados',
+    color: 'bg-emerald-500',
+    subcategories: [
+      { name: 'Poda de Árvores', slug: 'jardinagem-poda' },
+      { name: 'Corte de Grama', slug: 'jardinagem-grama' },
+      { name: 'Paisagismo', slug: 'jardinagem-paisagismo' },
+      { name: 'Irrigação', slug: 'jardinagem-irrigacao' },
+      { name: 'Controle de Pragas', slug: 'jardinagem-pragas' },
+    ],
+  },
+  {
+    icon: Snowflake,
+    name: 'Climatização',
+    slug: 'climatizacao',
+    description: 'Ar-condicionado, refrigeração',
+    color: 'bg-cyan-600',
+    subcategories: [
+      { name: 'Instalação de Split', slug: 'clima-instalacao-split' },
+      { name: 'Manutenção', slug: 'clima-manutencao' },
+      { name: 'Higienização', slug: 'clima-higienizacao' },
+      { name: 'Refrigeração Comercial', slug: 'clima-refrigeracao-comercial' },
+    ],
+  },
+  {
+    icon: Hammer,
+    name: 'Marcenaria e Móveis',
+    slug: 'marcenaria-moveis',
+    description: 'Projetos sob medida',
+    color: 'bg-amber-700',
+    subcategories: [
+      { name: 'Móveis Planejados', slug: 'marcenaria-moveis-planejados' },
+      { name: 'Restauração', slug: 'marcenaria-restauracao' },
+      { name: 'Portas e Rodapés', slug: 'marcenaria-portas' },
+      { name: 'Montagem de Móveis', slug: 'marcenaria-montagem' },
+    ],
+  },
+  {
+    icon: Shield,
+    name: 'Segurança',
+    slug: 'seguranca',
+    description: 'CFTV, alarmes, controles',
+    color: 'bg-slate-700',
+    subcategories: [
+      { name: 'Câmeras de Segurança', slug: 'seguranca-cftv' },
+      { name: 'Alarmes', slug: 'seguranca-alarmes' },
+      { name: 'Cerca Elétrica', slug: 'seguranca-cerca' },
+      { name: 'Controle de Acesso', slug: 'seguranca-acesso' },
+    ],
+  },
+  {
+    icon: Camera,
+    name: 'Fotografia e Vídeo',
+    slug: 'foto-video',
+    description: 'Coberturas, edições',
+    color: 'bg-fuchsia-600',
+    subcategories: [
+      { name: 'Fotografia de Eventos', slug: 'foto-eventos' },
+      { name: 'Ensaio Fotográfico', slug: 'foto-ensaio' },
+      { name: 'Filmagem', slug: 'video-filmagem' },
+      { name: 'Edição', slug: 'video-edicao' },
+    ],
+  },
+  {
+    icon: Music,
+    name: 'Eventos e Entretenimento',
+    slug: 'eventos-entretenimento',
+    description: 'Buffet, DJ, decoração',
+    color: 'bg-red-500',
+    subcategories: [
+      { name: 'Buffet', slug: 'eventos-buffet' },
+      { name: 'DJ', slug: 'eventos-dj' },
+      { name: 'Decoração de Eventos', slug: 'eventos-decoracao' },
+      { name: 'Locação de Equipamentos', slug: 'eventos-locacao' },
+    ],
+  },
+  {
+    icon: Book,
+    name: 'Aulas e Treinamentos',
+    slug: 'aulas-treinamentos',
+    description: 'Aulas particulares e cursos',
+    color: 'bg-teal-600',
+    subcategories: [
+      { name: 'Reforço Escolar', slug: 'aulas-reforco' },
+      { name: 'Idiomas', slug: 'aulas-idiomas' },
+      { name: 'Música', slug: 'aulas-musica' },
+      { name: 'Tecnologia', slug: 'aulas-tecnologia' },
+    ],
+  },
+];
+
+export default categories;
