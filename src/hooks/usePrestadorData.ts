@@ -13,15 +13,15 @@ export const usePrestadorData = () => {
 
   // Buscar orçamentos disponíveis para o prestador (baseado na categoria e localização)
   const { data: orcamentosDisponiveis = [], isLoading: loadingOrcamentos } = useQuery({
-    queryKey: ['orcamentos-disponiveis', user?.id],
+    queryKey: ['orcamentos-disponiveis', user?.email],
     queryFn: async () => {
-      if (!user?.id) return [];
+      if (!user?.email) return [];
       
-      // Primeiro buscar dados do prestador
+      // Primeiro buscar dados do prestador pelo email
       const { data: prestador } = await supabase
         .from('profissionais')
-        .select('categoria_slug, uf, cidade')
-        .eq('id', user.id)
+        .select('categoria_slug, uf, cidade, id')
+        .eq('email', user.email)
         .maybeSingle();
 
       if (!prestador) return [];
@@ -53,14 +53,23 @@ export const usePrestadorData = () => {
 
       return data || [];
     },
-    enabled: !!user?.id,
+    enabled: !!user?.email,
   });
 
   // Buscar propostas enviadas pelo prestador
   const { data: propostas = [], isLoading: loadingPropostas } = useQuery({
-    queryKey: ['propostas-prestador', user?.id],
+    queryKey: ['propostas-prestador', user?.email],
     queryFn: async () => {
-      if (!user?.id) return [];
+      if (!user?.email) return [];
+
+      // Primeiro buscar ID do prestador pelo email
+      const { data: prestador } = await supabase
+        .from('profissionais')
+        .select('id')
+        .eq('email', user.email)
+        .maybeSingle();
+
+      if (!prestador) return [];
 
       const { data, error } = await supabase
         .from('propostas')
@@ -68,7 +77,7 @@ export const usePrestadorData = () => {
           *,
           solicitacao:solicitacoes_orcamento!inner(*)
         `)
-        .eq('prestador_id', user.id)
+        .eq('prestador_id', prestador.id)
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -77,19 +86,19 @@ export const usePrestadorData = () => {
       }
       return data || [];
     },
-    enabled: !!user?.id,
+    enabled: !!user?.email,
   });
 
   // Buscar dados do perfil do prestador
   const { data: prestador } = useQuery({
-    queryKey: ['prestador-perfil', user?.id],
+    queryKey: ['prestador-perfil', user?.email],
     queryFn: async () => {
-      if (!user?.id) return null;
+      if (!user?.email) return null;
 
       const { data, error } = await supabase
         .from('profissionais')
         .select('*')
-        .eq('id', user.id)
+        .eq('email', user.email)
         .maybeSingle();
 
       if (error) {
@@ -98,7 +107,7 @@ export const usePrestadorData = () => {
       }
       return data;
     },
-    enabled: !!user?.id,
+    enabled: !!user?.email,
   });
 
   return {

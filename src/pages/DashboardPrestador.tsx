@@ -33,23 +33,34 @@ const DashboardPrestador = () => {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-        // Buscar dados do prestador
+        // Buscar dados do prestador pelo email
         const { data: prestador } = await supabase
           .from('profissionais')
           .select('*')
-          .eq('id', user.id)
+          .eq('email', user.email)
           .maybeSingle();
 
         if (prestador) {
           setProfileName(prestador.nome || '');
           
-          // Buscar estatísticas
-          // TODO: Implementar busca de propostas e solicitações aceitas
+          // Buscar estatísticas reais
+          const [{ count: totalPropostas }, { count: solicitacoesAtendidas }] = await Promise.all([
+            supabase
+              .from('propostas')
+              .select('*', { count: 'exact', head: true })
+              .eq('prestador_id', prestador.id),
+            supabase
+              .from('propostas')
+              .select('*', { count: 'exact', head: true })
+              .eq('prestador_id', prestador.id)
+              .eq('status', 'aceita')
+          ]);
+
           setStats({
-            solicitacoesAceitas: 0, // Implementar contagem
-            propostas: 0, // Implementar contagem
+            solicitacoesAceitas: solicitacoesAtendidas || 0,
+            propostas: totalPropostas || 0,
             avaliacaoMedia: prestador.nota_media || 0,
-            servicosConcluidos: 0 // Implementar contagem
+            servicosConcluidos: solicitacoesAtendidas || 0
           });
         }
       } catch (error) {
@@ -105,7 +116,8 @@ const DashboardPrestador = () => {
           <div className="lg:col-span-1">
             <div className="bg-white rounded-3xl shadow-lg p-6 sticky top-8">
               <div className="text-center mb-6">
-                <div className="w-20 h-20 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-3">
+                <div className="w-20 h-20 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-3 overflow-hidden">
+                  {/* Aqui deveria ter a foto do prestador */}
                   <User className="h-10 w-10 text-white" />
                 </div>
                 <h3 className="font-bold text-gray-900">

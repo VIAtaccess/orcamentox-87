@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Camera, Upload } from 'lucide-react';
 import { useImageUpload } from '@/hooks/useImageUpload';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ImageUploadProps {
   currentImage?: string;
@@ -36,7 +37,13 @@ const ImageUpload = ({
     if (!file) return;
 
     try {
-      const imageUrl = await uploadImage(file, userId, userType);
+      // Buscar email do usuário atual
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user?.email) {
+        throw new Error('Usuário não encontrado');
+      }
+      
+      const imageUrl = await uploadImage(file, user.email, userType);
       onImageUpdate(imageUrl);
     } catch (error) {
       console.error('Erro no upload:', error);

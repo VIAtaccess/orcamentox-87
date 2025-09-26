@@ -7,7 +7,7 @@ export const useImageUpload = () => {
   const [isUploading, setIsUploading] = useState(false);
   const { toast } = useToast();
 
-  const uploadImage = async (file: File, userId: string, folder: 'clientes' | 'profissionais') => {
+  const uploadImage = async (file: File, userEmail: string, folder: 'clientes' | 'profissionais') => {
     setIsUploading(true);
     try {
       // Validar arquivo
@@ -19,9 +19,11 @@ export const useImageUpload = () => {
         throw new Error('A imagem deve ter no máximo 5MB.');
       }
 
-      // Gerar nome único para o arquivo
+      // Gerar nome único para o arquivo usando timestamp
       const fileExt = file.name.split('.').pop();
-      const fileName = `${userId}/profile.${fileExt}`;
+      const timestamp = Date.now();
+      const cleanEmail = userEmail.replace(/[^a-zA-Z0-9]/g, '_');
+      const fileName = `${cleanEmail}_${timestamp}.${fileExt}`;
       const filePath = `${folder}/${fileName}`;
 
       // Upload do arquivo

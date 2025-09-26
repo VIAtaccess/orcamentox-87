@@ -1,25 +1,20 @@
-
 import React, { useEffect, useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label"; 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { User, Mail, Phone, MapPin, ArrowLeft, Building, LogOut, Briefcase, Camera, ExternalLink } from 'lucide-react';
+import { User, Mail, Phone, MapPin, ArrowLeft, LogOut } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from "@/hooks/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useBrazilLocations } from '@/hooks/use-brazil-locations';
 import { usePhoneMask } from '@/hooks/usePhoneMask';
-import { useCnpjMask } from '@/hooks/useCnpjMask';
+import { useCpfMask } from '@/hooks/useCpfMask';
 import Header from '@/components/Header';
 import ImageUpload from '@/components/ImageUpload';
-import CategorySelector from '@/components/CategorySelector';
-import ServiceImageUpload from '@/components/ServiceImageUpload';
-import { generateFriendlyUrl } from '@/utils/urlUtils';
 
-const PerfilPrestador = () => {
+const Perfil = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [profile, setProfile] = useState({
@@ -30,19 +25,15 @@ const PerfilPrestador = () => {
     cidade: '',
     uf: '',
     foto_url: '',
-    cnpj: '',
-    descricao: '',
-    categoria_slug: '',
-    subcategoria_slug: '',
-    imagem_servico_1: '',
-    imagem_servico_2: '',
-    imagem_servico_3: ''
+    cpf_cnpj: '',
+    data_nascimento: '',
+    tipo_pessoa: 'fisica'
   });
   const [userId, setUserId] = useState<string>('');
   const { toast } = useToast();
   const { states, cities, loadingStates, loadingCities, fetchCities } = useBrazilLocations();
   const phoneMask = usePhoneMask(profile.whatsapp);
-  const cnpjMask = useCnpjMask(profile.cnpj);
+  const cpfMask = useCpfMask(profile.cpf_cnpj);
 
   useEffect(() => {
     if (profile.uf) {
@@ -57,29 +48,25 @@ const PerfilPrestador = () => {
 
       setUserId(user.id);
 
-      // Buscar dados do prestador pelo email, não pelo ID
-      const { data: prestador } = await supabase
-        .from('profissionais')
+      // Buscar dados do cliente pelo email
+      const { data: cliente } = await supabase
+        .from('clientes')
         .select('*')
         .eq('email', user.email)
         .maybeSingle();
 
-      if (prestador) {
+      if (cliente) {
         setProfile({
-          nome: prestador.nome || '',
-          email: prestador.email || '',
-          whatsapp: prestador.whatsapp || '',
-          endereco: prestador.endereco || '',
-          cidade: prestador.cidade || '',
-          uf: prestador.uf || '',
-          foto_url: prestador.foto_url || '',
-          cnpj: prestador.cnpj || '',
-          descricao: prestador.descricao || '',
-          categoria_slug: prestador.categoria_slug || '',
-          subcategoria_slug: (prestador as any).subcategoria_slug || '',
-          imagem_servico_1: (prestador as any).imagem_servico_1 || '',
-          imagem_servico_2: (prestador as any).imagem_servico_2 || '',
-          imagem_servico_3: (prestador as any).imagem_servico_3 || ''
+          nome: cliente.nome || '',
+          email: cliente.email || '',
+          whatsapp: cliente.whatsapp || '',
+          endereco: cliente.endereco || '',
+          cidade: cliente.cidade || '',
+          uf: cliente.uf || '',
+          foto_url: cliente.foto_url || '',
+          cpf_cnpj: cliente.cpf_cnpj || '',
+          data_nascimento: cliente.data_nascimento || '',
+          tipo_pessoa: cliente.tipo_pessoa || 'fisica'
         });
       }
     };
@@ -94,7 +81,7 @@ const PerfilPrestador = () => {
       if (!user) return;
 
       const { error } = await supabase
-        .from('profissionais')
+        .from('clientes')
         .update({
           nome: profile.nome,
           whatsapp: phoneMask.getUnmaskedValue(),
@@ -102,13 +89,9 @@ const PerfilPrestador = () => {
           cidade: profile.cidade,
           uf: profile.uf,
           foto_url: profile.foto_url,
-          cnpj: cnpjMask.getUnmaskedValue(),
-          descricao: profile.descricao,
-          categoria_slug: profile.categoria_slug,
-          subcategoria_slug: profile.subcategoria_slug,
-          imagem_servico_1: profile.imagem_servico_1,
-          imagem_servico_2: profile.imagem_servico_2,
-          imagem_servico_3: profile.imagem_servico_3
+          cpf_cnpj: cpfMask.getUnmaskedValue(),
+          data_nascimento: profile.data_nascimento || null,
+          tipo_pessoa: profile.tipo_pessoa
         })
         .eq('email', user.email);
 
@@ -139,30 +122,13 @@ const PerfilPrestador = () => {
     setProfile(prev => ({ ...prev, whatsapp: formatted }));
   };
 
-  const handleCnpjChange = (value: string) => {
-    const formatted = cnpjMask.handleChange(value);
-    setProfile(prev => ({ ...prev, cnpj: formatted }));
-  }; 
+  const handleCpfChange = (value: string) => {
+    const formatted = cpfMask.handleChange(value);
+    setProfile(prev => ({ ...prev, cpf_cnpj: formatted }));
+  };
 
   const handleImageUpdate = (imageUrl: string) => {
     setProfile(prev => ({ ...prev, foto_url: imageUrl }));
-  };
-
-  const handleServiceImageUpdate = (imageNumber: 1 | 2 | 3, imageUrl: string) => {
-    setProfile(prev => ({ ...prev, [`imagem_servico_${imageNumber}`]: imageUrl }));
-  };
-
-  const handleServiceImageRemove = (imageNumber: 1 | 2 | 3) => {
-    setProfile(prev => ({ ...prev, [`imagem_servico_${imageNumber}`]: '' }));
-  };
-
-  const handleViewMyPage = () => {
-    if (profile.cidade && profile.categoria_slug && profile.nome) {
-      // Buscar ID do prestador pelo email para usar na URL
-      const prestadorId = userId; // Usaremos o ID do usuário auth
-      const friendlyUrl = generateFriendlyUrl(profile.cidade, profile.categoria_slug, prestadorId);
-      window.open(friendlyUrl, '_blank');
-    }
   };
 
   const handleLogout = async () => {
@@ -177,12 +143,12 @@ const PerfilPrestador = () => {
         <div className="container mx-auto px-4 py-8">
           <div className="max-w-4xl mx-auto">
             <div className="mb-8">
-              <Link to="/dashboard-prestador" className="inline-flex items-center text-primary hover:text-primary/80 mb-4">
+              <Link to="/dashboard" className="inline-flex items-center text-primary hover:text-primary/80 mb-4">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Voltar ao Dashboard
               </Link>
               <h1 className="text-3xl font-bold text-gray-900">Meu Perfil</h1>
-              <p className="text-gray-600 mt-2">Gerencie suas informações profissionais</p>
+              <p className="text-gray-600 mt-2">Gerencie suas informações pessoais</p>
             </div>
 
             <div className="grid lg:grid-cols-3 gap-8">
@@ -194,23 +160,14 @@ const PerfilPrestador = () => {
                       currentImage={profile.foto_url}
                       userName={profile.nome}
                       userId={userId}
-                      userType="profissionais"
+                      userType="clientes"
                       onImageUpdate={handleImageUpdate}
                       size="lg"
                     />
                     <h3 className="font-bold text-lg mb-2 mt-4">{profile.nome}</h3>
                     <p className="text-gray-600 text-sm mb-4">
-                      Prestador de Serviço
+                      Cliente
                     </p>
-                    <Button 
-                      variant="outline" 
-                      onClick={handleViewMyPage}
-                      className="w-full"
-                      disabled={!profile.cidade || !profile.categoria_slug}
-                    >
-                      <ExternalLink className="h-4 w-4 mr-2" />
-                      Ver Minha Página
-                    </Button>
                   </CardContent>
                 </Card>
               </div>
@@ -259,44 +216,26 @@ const PerfilPrestador = () => {
                         />
                       </div>
                       <div>
-                        <Label htmlFor="cnpj">CNPJ</Label>
+                        <Label htmlFor="cpf_cnpj">CPF</Label>
                         <Input
-                          id="cnpj"
-                          value={profile.cnpj}
-                          onChange={(e) => handleCnpjChange(e.target.value)}
-                          placeholder="00.000.000/0001-00"
-                          maxLength={18}
+                          id="cpf_cnpj"
+                          value={profile.cpf_cnpj}
+                          onChange={(e) => handleCpfChange(e.target.value)}
+                          placeholder="000.000.000-00"
+                          maxLength={14}
                         />
                       </div>
                     </div>
 
                     <div>
-                      <Label htmlFor="descricao">Descrição dos Serviços</Label>
-                      <Textarea
-                        id="descricao"
-                        value={profile.descricao}
-                        onChange={(e) => handleInputChange('descricao', e.target.value)}
-                        placeholder="Descreva os serviços que você oferece..."
-                        rows={4}
+                      <Label htmlFor="data_nascimento">Data de Nascimento</Label>
+                      <Input
+                        id="data_nascimento"
+                        type="date"
+                        value={profile.data_nascimento}
+                        onChange={(e) => handleInputChange('data_nascimento', e.target.value)}
                       />
                     </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center">
-                      <Briefcase className="h-5 w-5 mr-2" />
-                      Categoria Profissional
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <CategorySelector
-                      selectedCategory={profile.categoria_slug}
-                      selectedSubcategory={profile.subcategoria_slug}
-                      onCategoryChange={(categorySlug) => handleInputChange('categoria_slug', categorySlug)}
-                      onSubcategoryChange={(subcategorySlug) => handleInputChange('subcategoria_slug', subcategorySlug)}
-                    />
                   </CardContent>
                 </Card>
 
@@ -310,12 +249,11 @@ const PerfilPrestador = () => {
                   <CardContent className="space-y-4">
                     <div>
                       <Label htmlFor="endereco">Endereço Completo</Label>
-                      <Textarea
+                      <Input
                         id="endereco"
                         value={profile.endereco}
                         onChange={(e) => handleInputChange('endereco', e.target.value)}
                         placeholder="Rua, número, bairro..."
-                        rows={3}
                       />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -361,43 +299,6 @@ const PerfilPrestador = () => {
                   </CardContent>
                 </Card>
 
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center">
-                      <Camera className="h-5 w-5 mr-2" />
-                      Galeria de Serviços
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-gray-600 mb-4">
-                      Adicione até 3 fotos dos seus melhores trabalhos para mostrar aos clientes
-                    </p>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <ServiceImageUpload
-                        currentImage={profile.imagem_servico_1}
-                        userId={userId}
-                        imageNumber={1}
-                        onImageUpdate={(url) => handleServiceImageUpdate(1, url)}
-                        onImageRemove={() => handleServiceImageRemove(1)}
-                      />
-                      <ServiceImageUpload
-                        currentImage={profile.imagem_servico_2}
-                        userId={userId}
-                        imageNumber={2}
-                        onImageUpdate={(url) => handleServiceImageUpdate(2, url)}
-                        onImageRemove={() => handleServiceImageRemove(2)}
-                      />
-                      <ServiceImageUpload
-                        currentImage={profile.imagem_servico_3}
-                        userId={userId}
-                        imageNumber={3}
-                        onImageUpdate={(url) => handleServiceImageUpdate(3, url)}
-                        onImageRemove={() => handleServiceImageRemove(3)}
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
-
                 <div className="flex flex-col md:flex-row md:justify-end gap-3">
                   <Button 
                     variant="outline"
@@ -424,4 +325,4 @@ const PerfilPrestador = () => {
   );
 };
 
-export default PerfilPrestador;
+export default Perfil;

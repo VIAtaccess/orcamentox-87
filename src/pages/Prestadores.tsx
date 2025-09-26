@@ -58,10 +58,14 @@ const Prestadores = () => {
                 <div className="p-6">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center space-x-3">
-                      <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                        <span className="text-primary font-semibold text-lg">
-                          {prestador.nome?.charAt(0)}
-                        </span>
+                      <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center overflow-hidden">
+                        {prestador.foto_url ? (
+                          <img src={prestador.foto_url} alt={prestador.nome} className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="text-primary font-semibold text-lg">
+                            {prestador.nome?.charAt(0)}
+                          </span>
+                        )}
                       </div>
                       <div>
                         <h3 className="font-semibold text-gray-900">{prestador.nome}</h3>

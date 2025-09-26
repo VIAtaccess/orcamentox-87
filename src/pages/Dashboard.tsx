@@ -27,12 +27,12 @@ const Dashboard = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      // Tenta achar como cliente
-      const { data: cliente } = await supabase
-        .from('clientes')
-        .select('nome')
-        .eq('id', user.id)
-        .maybeSingle();
+        // Buscar dados do cliente pelo email, não pelo ID
+        const { data: cliente } = await supabase
+          .from('clientes')
+          .select('nome')
+          .eq('email', user.email)
+          .maybeSingle();
 
       if (cliente) {
         setUserType('cliente');
@@ -40,11 +40,11 @@ const Dashboard = () => {
         return;
       }
 
-      // Tenta achar como prestador
+      // Tenta achar como prestador pelo email
       const { data: prestador } = await supabase
         .from('profissionais')
         .select('nome')
-        .eq('id', user.id)
+        .eq('email', user.email)
         .maybeSingle();
 
       if (prestador) {
