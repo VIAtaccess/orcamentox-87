@@ -34,14 +34,27 @@ const Perfil = () => {
   const [userId, setUserId] = useState<string>('');
   const { toast } = useToast();
   const { states, cities, loadingStates, loadingCities, fetchCities } = useBrazilLocations();
-  const phoneMask = usePhoneMask(profile.whatsapp);
-  const cpfMask = useCpfMask(profile.cpf_cnpj);
+  const phoneMask = usePhoneMask();
+  const cpfMask = useCpfMask();
 
   useEffect(() => {
     if (profile.uf) {
       fetchCities(profile.uf);
     }
   }, [profile.uf, fetchCities]);
+
+  // Sincronizar máscaras quando o perfil é carregado
+  useEffect(() => {
+    if (profile.whatsapp) {
+      phoneMask.setValue(phoneMask.formatPhone(profile.whatsapp));
+    }
+  }, [profile.whatsapp]);
+
+  useEffect(() => {
+    if (profile.cpf_cnpj) {
+      cpfMask.setValue(cpfMask.formatCpf(profile.cpf_cnpj));
+    }
+  }, [profile.cpf_cnpj]);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -121,12 +134,12 @@ const Perfil = () => {
 
   const handlePhoneChange = (value: string) => {
     const formatted = phoneMask.handleChange(value);
-    setProfile(prev => ({ ...prev, whatsapp: formatted }));
+    phoneMask.setValue(formatted);
   };
 
   const handleCpfChange = (value: string) => {
     const formatted = cpfMask.handleChange(value);
-    setProfile(prev => ({ ...prev, cpf_cnpj: formatted }));
+    cpfMask.setValue(formatted);
   };
 
   const handleImageUpdate = (imageUrl: string) => {
@@ -211,7 +224,7 @@ const Perfil = () => {
                         <Label htmlFor="whatsapp">WhatsApp</Label>
                         <Input
                           id="whatsapp"
-                          value={profile.whatsapp}
+                          value={phoneMask.value}
                           onChange={(e) => handlePhoneChange(e.target.value)}
                           placeholder="(11) 99999-9999"
                           maxLength={15}
@@ -241,7 +254,7 @@ const Perfil = () => {
                         </Label>
                         <Input
                           id="cpf_cnpj"
-                          value={profile.cpf_cnpj}
+                          value={cpfMask.value}
                           onChange={(e) => handleCpfChange(e.target.value)}
                           placeholder={profile.tipo_pessoa === 'fisica' ? '000.000.000-00' : '00.000.000/0001-00'}
                           maxLength={profile.tipo_pessoa === 'fisica' ? 14 : 18}

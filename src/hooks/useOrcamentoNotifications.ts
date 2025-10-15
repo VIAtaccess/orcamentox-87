@@ -6,14 +6,14 @@ import { toast } from 'sonner';
 export const useOrcamentoNotifications = () => {
   const [isSending, setIsSending] = useState(false);
 
-  const notifyProviders = async (solicitacaoId: string, titulo: string, categoria: string, uf: string, cidade: string) => {
+  const notifyProviders = async (solicitacaoId: string, titulo: string, categoria: string, subcategoria: string | null, uf: string, cidade: string) => {
     setIsSending(true);
     
     try {
-      console.log('Iniciando busca de prestadores para:', { categoria, uf, cidade });
+      console.log('Iniciando busca de prestadores para:', { categoria, subcategoria, uf, cidade });
       
-      // Buscar prestadores da mesma categoria e região
-      const { data: prestadores, error } = await supabase
+      // Buscar prestadores da mesma categoria, subcategoria (se fornecida) e região
+      let query = supabase
         .from('profissionais')
         .select('whatsapp, nome')
         .eq('categoria_slug', categoria)
@@ -22,6 +22,13 @@ export const useOrcamentoNotifications = () => {
         .eq('ativo', true)
         .not('whatsapp', 'is', null)
         .neq('whatsapp', '');
+
+      // Adicionar filtro de subcategoria se fornecida
+      if (subcategoria) {
+        query = query.eq('subcategoria_slug', subcategoria);
+      }
+
+      const { data: prestadores, error } = await query;
 
       console.log('Prestadores encontrados:', prestadores);
 

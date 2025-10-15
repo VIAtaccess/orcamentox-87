@@ -177,11 +177,14 @@ const SolicitarOrcamento = () => {
       
       // Notificar prestadores via WhatsApp
       const selectedCategory = categories.find(cat => cat.id === formData.categoria_id);
+      const selectedSubcategory = subcategories.find(sub => sub.id === formData.subcategoria_id);
+      
       if (selectedCategory) {
         await notifyProviders(
           solicitacao.id,
           formData.titulo,
           selectedCategory.slug,
+          selectedSubcategory?.slug || null,
           formData.uf,
           formData.cidade
         );
