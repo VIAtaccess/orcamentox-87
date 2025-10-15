@@ -13,93 +13,56 @@ serve(async (req) => {
   }
 
   try {
-    // Esta função será chamada periodicamente para processar notificações pendentes
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!
+    const { whatsapp_number, message } = await req.json()
     
-    // Buscar notificações pendentes
-    const response = await fetch(`${supabaseUrl}/rest/v1/whatsapp_notifications?status=eq.pending&limit=10`, {
+    console.log('Enviando WhatsApp para:', whatsapp_number)
+    console.log('Mensagem:', message)
+
+    if (!whatsapp_number || !message) {
+      return new Response(
+        JSON.stringify({ error: 'whatsapp_number e message são obrigatórios' }),
+        { 
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
+    }
+
+    // Enviar mensagem via WhatsApp API
+    const whatsappResponse = await fetch('https://7167.bubblewhats.com/recursive-send-message', {
+      method: 'POST',
       headers: {
-        'Authorization': `Bearer ${supabaseAnonKey}`,
-        'apikey': supabaseAnonKey,
+        'Authorization': 'MWE1YzViMzlkMWUxYmY1ZDIzODQwZjhl',
         'Content-Type': 'application/json',
       },
+      body: JSON.stringify({
+        recipients: whatsapp_number,
+        message: message,
+        interval: "1"
+      })
     })
 
-    const notifications = await response.json()
-    console.log(`Processando ${notifications.length} notificações WhatsApp`)
+    const responseText = await whatsappResponse.text()
+    console.log('WhatsApp API Response:', responseText)
 
-    // Processar cada notificação
-    for (const notification of notifications) {
-      try {
-        // Enviar mensagem via WhatsApp API
-        const whatsappResponse = await fetch('https://7167.bubblewhats.com/recursive-send-message', {
-          method: 'POST',
-          headers: {
-            'Authorization': 'MWE1YzViMzlkMWUxYmY1ZDIzODQwZjhl',
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            recipients: notification.whatsapp_number,
-            message: notification.message,
-            interval: "1"
-          })
-        })
-
-        if (whatsappResponse.ok) {
-          // Marcar como enviada
-          await fetch(`${supabaseUrl}/rest/v1/whatsapp_notifications?id=eq.${notification.id}`, {
-            method: 'PATCH',
-            headers: {
-              'Authorization': `Bearer ${supabaseAnonKey}`,
-              'apikey': supabaseAnonKey,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              status: 'sent',
-              sent_at: new Date().toISOString()
-            })
-          })
-          console.log(`Notificação ${notification.id} enviada com sucesso`)
-        } else {
-          // Marcar como falhou
-          const errorText = await whatsappResponse.text()
-          await fetch(`${supabaseUrl}/rest/v1/whatsapp_notifications?id=eq.${notification.id}`, {
-            method: 'PATCH',
-            headers: {
-              'Authorization': `Bearer ${supabaseAnonKey}`,
-              'apikey': supabaseAnonKey,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              status: 'failed',
-              error_message: errorText
-            })
-          })
-          console.error(`Erro ao enviar notificação ${notification.id}:`, errorText)
+    if (!whatsappResponse.ok) {
+      console.error('WhatsApp API Error:', responseText)
+      return new Response(
+        JSON.stringify({ 
+          error: 'Falha ao enviar WhatsApp',
+          details: responseText 
+        }),
+        { 
+          status: whatsappResponse.status,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
-      } catch (error) {
-        console.error(`Erro ao processar notificação ${notification.id}:`, error)
-        // Marcar como falhou
-        await fetch(`${supabaseUrl}/rest/v1/whatsapp_notifications?id=eq.${notification.id}`, {
-          method: 'PATCH',
-          headers: {
-            'Authorization': `Bearer ${supabaseAnonKey}`,
-            'apikey': supabaseAnonKey,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            status: 'failed',
-            error_message: error.message
-          })
-        })
-      }
+      )
     }
 
     return new Response(
       JSON.stringify({ 
-        success: true, 
-        processed: notifications.length 
+        success: true,
+        message: 'WhatsApp enviado com sucesso'
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -107,7 +70,7 @@ serve(async (req) => {
     )
 
   } catch (error) {
-    console.error('Erro geral:', error)
+    console.error('Erro ao enviar WhatsApp:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
       { 

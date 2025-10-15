@@ -54,7 +54,7 @@ export const useDashboardData = () => {
         .select(`
           *,
           solicitacao:solicitacoes_orcamento(*),
-          profissionais:prestador_id(nome, nota_media, foto_url)
+          profissionais!propostas_prestador_id_fkey(nome, nota_media, foto_url)
         `)
         .in('solicitacao_id', solicitacaoIds)
         .order('created_at', { ascending: false })
