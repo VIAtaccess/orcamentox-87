@@ -27,32 +27,52 @@ export const usePrestadorData = () => {
       if (!prestador) return [];
 
       // Buscar orçamentos ativos na mesma categoria e região
-      const { data, error } = await supabase
+      const { data: orcamentosData, error } = await supabase
         .from('solicitacoes_orcamento')
-        .select(`
-          *,
-          categoria:categoria_id(name, slug),
-          subcategoria:subcategoria_id(name, slug)
-        `)
+        .select('*')
         .eq('status', 'ativa')
         .eq('uf', prestador.uf)
         .eq('cidade', prestador.cidade)
         .order('created_at', { ascending: false })
-        .limit(5);
+        .limit(20); // Buscar mais para filtrar por categoria depois
 
       if (error) {
         console.error('Erro ao buscar orçamentos disponíveis:', error);
         return [];
       }
 
-      // Filtrar por categoria se o prestador tiver uma categoria definida
-      if (prestador.categoria_slug) {
-        return data?.filter(orcamento => 
-          orcamento.categoria?.slug === prestador.categoria_slug
-        ) || [];
+      if (!orcamentosData || orcamentosData.length === 0) {
+        return [];
       }
 
-      return data || [];
+      // Buscar dados de categorias e subcategorias
+      const categoriaIds = orcamentosData.map(o => o.categoria_id).filter(Boolean);
+      const subcategoriaIds = orcamentosData.map(o => o.subcategoria_id).filter(Boolean);
+
+      const [categoriasData, subcategoriasData] = await Promise.all([
+        categoriaIds.length > 0 
+          ? supabase.from('categories').select('id, name, slug').in('id', categoriaIds)
+          : Promise.resolve({ data: [] }),
+        subcategoriaIds.length > 0
+          ? supabase.from('subcategories').select('id, name, slug').in('id', subcategoriaIds)
+          : Promise.resolve({ data: [] })
+      ]);
+
+      // Combinar os dados
+      let orcamentosComDados = orcamentosData.map(orcamento => ({
+        ...orcamento,
+        categoria: categoriasData.data?.find(c => c.id === orcamento.categoria_id),
+        subcategoria: subcategoriasData.data?.find(s => s.id === orcamento.subcategoria_id)
+      }));
+
+      // Filtrar por categoria se o prestador tiver uma categoria definida
+      if (prestador.categoria_slug) {
+        orcamentosComDados = orcamentosComDados.filter(orcamento => 
+          orcamento.categoria?.slug === prestador.categoria_slug
+        );
+      }
+
+      return orcamentosComDados.slice(0, 5);
     },
     enabled: !!user?.email,
   });
@@ -72,12 +92,9 @@ export const usePrestadorData = () => {
 
       if (!prestador) return [];
 
-      const { data, error } = await supabase
+      const { data: propostasData, error } = await supabase
         .from('propostas')
-        .select(`
-          *,
-          solicitacao:solicitacoes_orcamento(*)
-        `)
+        .select('*')
         .eq('prestador_id', prestador.id)
         .order('created_at', { ascending: false })
         .limit(5);
@@ -86,7 +103,24 @@ export const usePrestadorData = () => {
         console.error('Erro ao buscar propostas:', error);
         return [];
       }
-      return data || [];
+      
+      // Buscar dados das solicitações
+      const solicitacaoIds = propostasData?.map(p => p.solicitacao_id).filter(Boolean) || [];
+      
+      if (solicitacaoIds.length === 0) {
+        return propostasData || [];
+      }
+      
+      const { data: solicitacoesData } = await supabase
+        .from('solicitacoes_orcamento')
+        .select('*')
+        .in('id', solicitacaoIds);
+      
+      // Combinar os dados
+      return propostasData?.map(proposta => ({
+        ...proposta,
+        solicitacao: solicitacoesData?.find(s => s.id === proposta.solicitacao_id)
+      })) || [];
     },
     enabled: !!user?.email,
   });

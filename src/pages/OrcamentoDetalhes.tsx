@@ -49,18 +49,31 @@ const OrcamentoDetalhes: React.FC = () => {
     queryFn: async () => {
       if (!id) throw new Error('ID do orçamento não fornecido');
       
-      const { data, error } = await supabase
+      const { data: orcamentoData, error } = await supabase
         .from('solicitacoes_orcamento')
-        .select(`
-          *,
-          categoria:categories!inner(name, slug),
-          subcategoria:subcategories(name, slug)
-        `)
+        .select('*')
         .eq('id', id)
         .single();
 
       if (error) throw error;
-      return data;
+      
+      if (!orcamentoData) return null;
+
+      // Buscar dados de categoria e subcategoria
+      const [categoriaData, subcategoriaData] = await Promise.all([
+        orcamentoData.categoria_id 
+          ? supabase.from('categories').select('id, name, slug').eq('id', orcamentoData.categoria_id).maybeSingle()
+          : Promise.resolve({ data: null }),
+        orcamentoData.subcategoria_id
+          ? supabase.from('subcategories').select('id, name, slug').eq('id', orcamentoData.subcategoria_id).maybeSingle()
+          : Promise.resolve({ data: null })
+      ]);
+
+      return {
+        ...orcamentoData,
+        categoria: categoriaData.data,
+        subcategoria: subcategoriaData.data
+      };
     },
     enabled: !!id
   });

@@ -23,15 +23,10 @@ export function AdminPropostas() {
   const { data: propostas, isLoading, refetch } = useQuery({
     queryKey: ["admin-propostas", searchQuery, currentPage],
     queryFn: async () => {
+      // Primeiro buscar propostas
       let query = supabase
         .from("propostas")
-        .select(`
-          *,
-          profissionais!inner (
-            nome,
-            email
-          )
-        `)
+        .select("*", { count: 'exact' })
         .order("created_at", { ascending: false });
 
       if (searchQuery) {
@@ -41,9 +36,27 @@ export function AdminPropostas() {
       const from = (currentPage - 1) * itemsPerPage;
       const to = from + itemsPerPage - 1;
       
-      const { data, error, count } = await query.range(from, to);
+      const { data: propostasData, error, count } = await query.range(from, to);
       
       if (error) throw error;
+      
+      // Buscar dados dos profissionais
+      const prestadorIds = propostasData?.map(p => p.prestador_id).filter(Boolean) || [];
+      
+      if (prestadorIds.length === 0) {
+        return { data: propostasData, count };
+      }
+      
+      const { data: profissionaisData } = await supabase
+        .from("profissionais")
+        .select("id, nome, email")
+        .in("id", prestadorIds);
+      
+      // Combinar os dados
+      const data = propostasData?.map(proposta => ({
+        ...proposta,
+        profissionais: profissionaisData?.find(p => p.id === proposta.prestador_id)
+      }));
       
       return { data, count };
     }

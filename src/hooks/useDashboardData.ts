@@ -49,13 +49,9 @@ export const useDashboardData = () => {
 
       const solicitacaoIds = solicitacoesDoCliente.map(s => s.id);
 
-      const { data, error } = await supabase
+      const { data: propostasData, error } = await supabase
         .from('propostas')
-        .select(`
-          *,
-          solicitacao:solicitacoes_orcamento(*),
-          profissionais!propostas_prestador_id_fkey(nome, nota_media, foto_url)
-        `)
+        .select('*')
         .in('solicitacao_id', solicitacaoIds)
         .order('created_at', { ascending: false })
         .limit(5);
@@ -64,7 +60,25 @@ export const useDashboardData = () => {
         console.error('Erro ao buscar propostas:', error);
         return [];
       }
-      return data || [];
+
+      // Buscar dados dos profissionais e solicitações separadamente
+      const prestadorIds = propostasData?.map(p => p.prestador_id).filter(Boolean) || [];
+      
+      const [profissionaisData, solicitacoesData] = await Promise.all([
+        prestadorIds.length > 0 
+          ? supabase.from('profissionais').select('id, nome, nota_media, foto_url').in('id', prestadorIds)
+          : Promise.resolve({ data: [] }),
+        supabase.from('solicitacoes_orcamento').select('*').in('id', solicitacaoIds)
+      ]);
+
+      // Combinar os dados
+      const data = propostasData?.map(proposta => ({
+        ...proposta,
+        profissionais: profissionaisData.data?.find(p => p.id === proposta.prestador_id),
+        solicitacao: solicitacoesData.data?.find(s => s.id === proposta.solicitacao_id)
+      })) || [];
+
+      return data;
     },
     enabled: !!user?.email,
   });

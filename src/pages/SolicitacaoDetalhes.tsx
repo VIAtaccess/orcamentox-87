@@ -48,7 +48,7 @@ const SolicitacaoDetalhes = () => {
     queryFn: async () => {
       if (!id) return [];
       
-      const { data, error } = await supabase
+      const { data: propostasData, error } = await supabase
         .from('propostas')
         .select('*')
         .eq('solicitacao_id', id)
@@ -58,7 +58,24 @@ const SolicitacaoDetalhes = () => {
         console.error('Erro ao buscar propostas:', error);
         return [];
       }
-      return data;
+      
+      // Buscar dados dos profissionais
+      const prestadorIds = propostasData?.map(p => p.prestador_id).filter(Boolean) || [];
+      
+      if (prestadorIds.length === 0) {
+        return propostasData || [];
+      }
+      
+      const { data: profissionaisData } = await supabase
+        .from('profissionais')
+        .select('id, nome, email, foto_url, nota_media')
+        .in('id', prestadorIds);
+      
+      // Combinar os dados
+      return propostasData?.map(proposta => ({
+        ...proposta,
+        profissional: profissionaisData?.find(p => p.id === proposta.prestador_id)
+      })) || [];
     },
     enabled: !!id,
   });
@@ -278,6 +295,11 @@ const SolicitacaoDetalhes = () => {
                         <CardContent className="p-4">
                           <div className="flex justify-between items-start mb-3">
                             <div>
+                              {(proposta as any).profissional && (
+                                <p className="text-sm text-gray-600 mb-1">
+                                  Profissional: <span className="font-medium">{(proposta as any).profissional.nome}</span>
+                                </p>
+                              )}
                               <p className="font-semibold text-lg">
                                 {proposta.valor_proposto ? 
                                   `R$ ${Number(proposta.valor_proposto).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` 

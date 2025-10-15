@@ -24,12 +24,7 @@ export function AdminSubcategorias() {
     queryFn: async () => {
       let query = supabase
         .from("subcategories")
-        .select(`
-          *,
-          categories (
-            name
-          )
-        `)
+        .select("*", { count: 'exact' })
         .order("created_at", { ascending: false });
 
       if (searchQuery) {
@@ -39,9 +34,27 @@ export function AdminSubcategorias() {
       const from = (currentPage - 1) * itemsPerPage;
       const to = from + itemsPerPage - 1;
       
-      const { data, error, count } = await query.range(from, to);
+      const { data: subcategoriasData, error, count } = await query.range(from, to);
       
       if (error) throw error;
+      
+      // Buscar dados das categorias
+      const categoryIds = subcategoriasData?.map(s => s.category_id).filter(Boolean) || [];
+      
+      if (categoryIds.length === 0) {
+        return { data: subcategoriasData, count };
+      }
+      
+      const { data: categoriasData } = await supabase
+        .from("categories")
+        .select("id, name")
+        .in("id", categoryIds);
+      
+      // Combinar os dados
+      const data = subcategoriasData?.map(subcategoria => ({
+        ...subcategoria,
+        categories: categoriasData?.find(c => c.id === subcategoria.category_id)
+      }));
       
       return { data, count };
     }
