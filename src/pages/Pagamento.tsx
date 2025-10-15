@@ -156,20 +156,22 @@ const Pagamento = () => {
           });
           toast({
             title: "PIX gerado com sucesso!",
-            description: "Escaneie o QR Code ou copie o código para pagar.",
+            description: "Escaneie o QR Code ou copie o código para pagar. Após o pagamento, sua assinatura será ativada automaticamente.",
           });
         } else {
           if (data.approved) {
             setPagamentoAprovado(true);
             toast({
               title: "Pagamento aprovado!",
-              description: `Assinatura do plano ${plano?.titulo} ativada com sucesso.`,
+              description: data.subscriptionId 
+                ? `Assinatura do plano ${plano?.titulo} ativada com sucesso!` 
+                : `Pagamento confirmado. Assinatura será ativada em breve.`,
             });
             setTimeout(() => navigate('/dashboard'), 3000);
           } else {
             toast({
               title: "Pagamento pendente",
-              description: "Seu pagamento está sendo processado.",
+              description: "Seu pagamento está sendo processado. Aguarde a confirmação.",
             });
           }
         }

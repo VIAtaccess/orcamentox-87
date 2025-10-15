@@ -206,14 +206,71 @@ serve(async (req) => {
       throw new Error(errorDetails);
     }
 
-    console.log('Cobrança criada:', paymentResult);
+    console.log('✓ Cobrança criada com sucesso:', { 
+      paymentId: paymentResult.id, 
+      status: paymentResult.status,
+      billingType: paymentResult.billingType 
+    });
+
+    // 3. CRIAR ASSINATURA apenas se pagamento for confirmado
+    let subscriptionId = null;
+    
+    if (paymentType === 'cartao') {
+      const approved = paymentResult.status === 'CONFIRMED' || paymentResult.status === 'RECEIVED';
+      
+      if (approved) {
+        console.log('Pagamento com cartão confirmado. Criando assinatura...');
+        
+        try {
+          const subscriptionData = {
+            customer: customerId,
+            billingType: 'CREDIT_CARD',
+            value: parseFloat(planData.valor),
+            nextDueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // +30 dias
+            cycle: 'MONTHLY',
+            description: `Assinatura ${planData.titulo}`,
+            externalReference: `assinatura_plano_${planData.id}`
+          };
+
+          const subscriptionResponse = await fetch(`${apiBaseUrl}/subscriptions`, {
+            method: 'POST',
+            headers: {
+              'access_token': asaasToken,
+              'accept': 'application/json',
+              'content-type': 'application/json',
+              'User-Agent': 'LovableApp/1.0'
+            },
+            body: JSON.stringify(subscriptionData)
+          });
+
+          const subscriptionResult = await subscriptionResponse.json();
+
+          if (subscriptionResponse.ok) {
+            subscriptionId = subscriptionResult.id;
+            console.log('✓ Assinatura criada com sucesso:', subscriptionId);
+          } else {
+            console.error('Erro ao criar assinatura:', subscriptionResult);
+            // Não vou lançar erro aqui pois o pagamento já foi aprovado
+            console.warn('Pagamento aprovado mas assinatura falhou. Revisar manualmente.');
+          }
+        } catch (subError) {
+          console.error('Erro ao criar assinatura:', subError);
+          // Não vou lançar erro pois o pagamento já foi aprovado
+        }
+      } else {
+        console.log('Pagamento com cartão não foi confirmado imediatamente. Status:', paymentResult.status);
+      }
+    } else {
+      console.log('Pagamento PIX criado. Assinatura será criada após confirmação do pagamento via webhook.');
+    }
 
     // Preparar resposta
     const responseData: any = {
       success: true,
       paymentId: paymentResult.id,
       status: paymentResult.status,
-      value: paymentResult.value
+      value: paymentResult.value,
+      subscriptionId: subscriptionId
     };
 
     // Dados específicos para PIX
@@ -228,6 +285,12 @@ serve(async (req) => {
       const approved = paymentResult.status === 'CONFIRMED' || paymentResult.status === 'RECEIVED';
       responseData.approved = approved;
       responseData.transactionReceiptUrl = paymentResult.transactionReceiptUrl;
+      
+      if (approved && subscriptionId) {
+        responseData.message = 'Pagamento aprovado e assinatura ativada com sucesso!';
+      } else if (approved) {
+        responseData.message = 'Pagamento aprovado! A assinatura será ativada em breve.';
+      }
     }
 
     return new Response(JSON.stringify(responseData), {
