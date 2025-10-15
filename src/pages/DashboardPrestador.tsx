@@ -16,6 +16,9 @@ import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from "@/hooks/use-toast";
 import { generateFriendlyUrl } from '@/utils/urlUtils';
+import { usePrestadorData } from '@/hooks/usePrestadorData';
+import { SolicitacoesList } from '@/components/dashboard/SolicitacoesList';
+import { PropostasList } from '@/components/dashboard/PropostasList';
 
 const DashboardPrestador = () => {
   const [profileName, setProfileName] = useState<string>('');
@@ -26,9 +29,15 @@ const DashboardPrestador = () => {
     avaliacaoMedia: 0,
     servicosConcluidos: 0
   });
-  const [recentActivity, setRecentActivity] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  
+  // Hook para buscar dados do prestador
+  const { 
+    orcamentosDisponiveis, 
+    propostas, 
+    loading: loadingPrestadorData 
+  } = usePrestadorData();
 
   useEffect(() => {
     const loadPrestadorData = async () => {
@@ -230,43 +239,18 @@ const DashboardPrestador = () => {
               </Card>
             </div>
 
-            {/* Leads Recentes */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <MessageSquare className="h-5 w-5 mr-2" />
-                  Orçamentos Recentes
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8">
-                  <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-500">Nenhum orçamento encontrado</p>
-                  <p className="text-sm text-gray-400 mt-1">
-                    Novos orçamentos aparecerão aqui conforme sua região e categoria
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+            {/* Componentes reutilizáveis para orçamentos e propostas */}
+            <SolicitacoesList 
+              userType="prestador" 
+              solicitacoes={orcamentosDisponiveis || []} 
+              isLoading={loadingPrestadorData} 
+            />
 
-            {/* Propostas Recentes */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <FileText className="h-5 w-5 mr-2" />
-                  Propostas Recentes
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8">
-                  <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-500">Nenhuma proposta enviada</p>
-                  <p className="text-sm text-gray-400 mt-1">
-                    Suas propostas enviadas aparecerão aqui
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+            <PropostasList 
+              userType="prestador" 
+              propostas={propostas || []} 
+              isLoading={loadingPrestadorData} 
+            />
           </div>
         </div>
       </div>

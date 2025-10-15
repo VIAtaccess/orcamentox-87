@@ -31,13 +31,14 @@ export const usePrestadorData = () => {
         .from('solicitacoes_orcamento')
         .select(`
           *,
-          categoria:categories!inner(name, slug),
+          categoria:categories(name, slug),
           subcategoria:subcategories(name, slug)
         `)
         .eq('status', 'ativa')
         .eq('uf', prestador.uf)
         .eq('cidade', prestador.cidade)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(5);
 
       if (error) {
         console.error('Erro ao buscar orçamentos disponíveis:', error);
@@ -75,10 +76,11 @@ export const usePrestadorData = () => {
         .from('propostas')
         .select(`
           *,
-          solicitacao:solicitacoes_orcamento!inner(*)
+          solicitacao:solicitacoes_orcamento(*)
         `)
         .eq('prestador_id', prestador.id)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(5);
 
       if (error) {
         console.error('Erro ao buscar propostas:', error);

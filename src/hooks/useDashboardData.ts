@@ -33,18 +33,32 @@ export const useDashboardData = () => {
   });
 
   const { data: propostas = [], isLoading: loadingPropostas } = useQuery({
-    queryKey: ['propostas', user?.id],
+    queryKey: ['propostas', user?.email],
     queryFn: async () => {
-      if (!user?.id) return [];
+      if (!user?.email) return [];
+
+      // Buscar propostas relacionadas às solicitações do cliente
+      const { data: solicitacoesDoCliente } = await supabase
+        .from('solicitacoes_orcamento')
+        .select('id')
+        .eq('email_cliente', user.email);
+
+      if (!solicitacoesDoCliente || solicitacoesDoCliente.length === 0) {
+        return [];
+      }
+
+      const solicitacaoIds = solicitacoesDoCliente.map(s => s.id);
 
       const { data, error } = await supabase
         .from('propostas')
         .select(`
           *,
-          solicitacao:solicitacoes_orcamento!inner(*)
+          solicitacao:solicitacoes_orcamento(*),
+          profissionais:prestador_id(nome, nota_media, foto_url)
         `)
-        .eq('solicitacao.cliente_id', user.id)
-        .order('created_at', { ascending: false });
+        .in('solicitacao_id', solicitacaoIds)
+        .order('created_at', { ascending: false })
+        .limit(5);
 
       if (error) {
         console.error('Erro ao buscar propostas:', error);
@@ -52,7 +66,7 @@ export const useDashboardData = () => {
       }
       return data || [];
     },
-    enabled: !!user?.id,
+    enabled: !!user?.email,
   });
 
   const { data: favoritos = [], isLoading: loadingFavoritos } = useQuery({
