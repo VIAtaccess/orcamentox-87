@@ -209,15 +209,17 @@ export function AdminCategorias() {
         }}
       />
 
-      <ConfirmDeleteModal
-        open={!!deletingCategoria}
-        onOpenChange={(open) => !open && setDeletingCategoria(null)}
-        title="Excluir Categoria"
-        description={`Tem certeza que deseja excluir a categoria "${deletingCategoria?.name}"? Esta ação não pode ser desfeita.`}
-        tableName="categories"
-        itemId={deletingCategoria?.id}
-        queryKey={['admin-categorias']}
-      />
+      {deletingCategoria && (
+        <ConfirmDeleteModal
+          open={true}
+          onOpenChange={(open) => !open && setDeletingCategoria(null)}
+          title="Excluir Categoria"
+          description={`Tem certeza que deseja excluir a categoria "${deletingCategoria.name}"? Esta ação não pode ser desfeita.`}
+          tableName="categories"
+          itemId={deletingCategoria.id}
+          queryKey={['admin-categorias']}
+        />
+      )}
     </div>
   );
 }

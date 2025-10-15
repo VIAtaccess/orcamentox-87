@@ -1,8 +1,8 @@
 // Utility functions for sending WhatsApp notifications
 import { supabase } from '@/integrations/supabase/client';
 
-const WHATSAPP_API_URL = 'https://7017.bubblewhats.com/recursive-send-message';
-const WHATSAPP_AUTH_TOKEN = 'NTExYzUxZGIzMjc2MTAxZjJhNzhkMjAx';
+const WHATSAPP_API_URL = 'https://7167.bubblewhats.com/recursive-send-message';
+const WHATSAPP_AUTH_TOKEN = 'MWE1YzViMzlkMWUxYmY1ZDIzODQwZjhl';
 
 interface WhatsAppMessage {
   recipients: string;

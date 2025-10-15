@@ -33,10 +33,10 @@ serve(async (req) => {
     for (const notification of notifications) {
       try {
         // Enviar mensagem via WhatsApp API
-        const whatsappResponse = await fetch('https://7017.bubblewhats.com/recursive-send-message', {
+        const whatsappResponse = await fetch('https://7167.bubblewhats.com/recursive-send-message', {
           method: 'POST',
           headers: {
-            'Authorization': 'NTExYzUxZGIzMjc2MTAxZjJhNzhkMjAx',
+            'Authorization': 'MWE1YzViMzlkMWUxYmY1ZDIzODQwZjhl',
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
