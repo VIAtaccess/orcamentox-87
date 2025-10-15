@@ -212,6 +212,29 @@ serve(async (req) => {
       billingType: paymentResult.billingType 
     });
 
+    // Para PIX, buscar QR Code em chamada separada
+    let pixQrCodeData = null;
+    if (paymentType === 'pix') {
+      console.log('Buscando QR Code PIX para pagamento:', paymentResult.id);
+      
+      const qrCodeResponse = await fetch(`${apiBaseUrl}/payments/${paymentResult.id}/pixQrCode`, {
+        headers: {
+          'access_token': asaasToken,
+          'accept': 'application/json',
+          'User-Agent': 'LovableApp/1.0'
+        }
+      });
+
+      if (qrCodeResponse.ok) {
+        pixQrCodeData = await qrCodeResponse.json();
+        console.log('✓ QR Code PIX obtido com sucesso');
+      } else {
+        const qrError = await qrCodeResponse.json();
+        console.error('Erro ao buscar QR Code PIX:', qrError);
+        throw new Error('Erro ao gerar QR Code PIX');
+      }
+    }
+
     // 3. CRIAR ASSINATURA apenas se pagamento for confirmado
     let subscriptionId = null;
     
@@ -274,10 +297,11 @@ serve(async (req) => {
     };
 
     // Dados específicos para PIX
-    if (paymentType === 'pix') {
-      responseData.pixQrCode = paymentResult.encodedImage;
-      responseData.pixCopyPaste = paymentResult.payload;
-      responseData.pixExpirationDate = paymentResult.expirationDate;
+    if (paymentType === 'pix' && pixQrCodeData) {
+      responseData.pixQrCode = pixQrCodeData.encodedImage;
+      responseData.pixCopyPaste = pixQrCodeData.payload;
+      responseData.pixExpirationDate = pixQrCodeData.expirationDate;
+      console.log('PIX QR Code adicionado à resposta');
     }
 
     // Dados específicos para cartão
