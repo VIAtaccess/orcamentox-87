@@ -39,10 +39,10 @@ serve(async (req) => {
       throw new Error('CPF deve conter 11 dígitos');
     }
 
-    // 1. Criar ou buscar cliente no Asaas
+    // 1. PRIMEIRO: Verificar se cliente já existe no Asaas
     let customerId = null;
     
-    // Verificar se cliente já existe
+    console.log('Buscando cliente no Asaas por CPF:', cleanCpf);
     const searchResponse = await fetch(
       `${apiBaseUrl}/customers?cpfCnpj=${cleanCpf}`,
       {
@@ -55,13 +55,22 @@ serve(async (req) => {
       }
     );
 
+    if (!searchResponse.ok) {
+      console.error('Erro ao buscar cliente:', await searchResponse.text());
+      throw new Error('Erro ao buscar cliente no Asaas');
+    }
+
     const searchResult = await searchResponse.json();
+    console.log('Resultado da busca:', { totalCount: searchResult.totalCount, hasData: !!searchResult.data });
     
     if (searchResult.data && searchResult.data.length > 0) {
+      // Cliente encontrado - usar o customer existente
       customerId = searchResult.data[0].id;
-      console.log('Cliente existente encontrado:', customerId);
+      console.log('✓ Cliente já existe no Asaas. Customer ID:', customerId);
     } else {
-      // Criar novo cliente
+      // Cliente não existe - criar novo
+      console.log('Cliente não encontrado. Criando novo cliente...');
+      
       const customerPayload = {
         name: customerData.nome.toUpperCase(),
         email: customerData.email.toLowerCase(),
@@ -70,7 +79,7 @@ serve(async (req) => {
         notificationDisabled: true
       };
 
-      console.log('Criando cliente no Asaas:', { ...customerPayload, cpfCnpj: cleanCpf });
+      console.log('Payload de criação:', { ...customerPayload, cpfCnpj: '***.' + cleanCpf.slice(-2) });
 
       const createCustomerResponse = await fetch(`${apiBaseUrl}/customers`, {
         method: 'POST',
@@ -87,12 +96,15 @@ serve(async (req) => {
       
       if (!createCustomerResponse.ok) {
         console.error('Erro ao criar cliente:', createResult);
-        throw new Error(createResult.errors?.[0]?.description || 'Erro ao criar cliente');
+        throw new Error(createResult.errors?.[0]?.description || 'Erro ao criar cliente no Asaas');
       }
 
       customerId = createResult.id;
-      console.log('Novo cliente criado:', customerId);
+      console.log('✓ Novo cliente criado com sucesso. Customer ID:', customerId);
     }
+
+    // 2. DEPOIS: Criar cobrança usando o customer ID obtido
+    console.log('Criando cobrança para customer:', customerId);
 
     // 2. Criar cobrança
     let paymentData: any = {

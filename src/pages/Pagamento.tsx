@@ -1,15 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { ArrowLeft, CreditCard, QrCode, Check, Shield, Copy, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, CreditCard, QrCode, Check, Shield, Copy, CheckCircle2, AlertCircle } from 'lucide-react';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useCpfMask } from "@/hooks/useCpfMask";
 import { usePhoneMask } from "@/hooks/usePhoneMask";
+import { validarCPF, validarEmail } from "@/utils/validators";
 
 interface Plano {
   id: string;
@@ -46,6 +47,32 @@ const Pagamento = () => {
     cvv: ''
   });
 
+  // Validações em tempo real
+  const cpfValido = useMemo(() => {
+    if (!cpf) return null;
+    return validarCPF(cpf);
+  }, [cpf]);
+
+  const emailValido = useMemo(() => {
+    if (!dadosCliente.email) return null;
+    return validarEmail(dadosCliente.email);
+  }, [dadosCliente.email]);
+
+  // Verifica se pode prosseguir
+  const podeProcessar = useMemo(() => {
+    if (!dadosCliente.nome || !dadosCliente.email || !cpf) return false;
+    if (cpfValido === false || emailValido === false) return false;
+    
+    if (metodo === 'cartao') {
+      if (!dadosCartao.numero || !dadosCartao.nome || !dadosCartao.validade || !dadosCartao.cvv) {
+        return false;
+      }
+    }
+    
+    return true;
+  }, [dadosCliente, cpf, cpfValido, emailValido, metodo, dadosCartao]);
+
+
   useEffect(() => {
     const fetchPlano = async () => {
       if (!planoId) return;
@@ -75,22 +102,10 @@ const Pagamento = () => {
   }, [planoId, toast]);
 
   const handlePagamento = async () => {
-    // Validações
-    if (!dadosCliente.nome || !dadosCliente.email || !cpf) {
+    if (!podeProcessar) {
       toast({
-        title: "Dados incompletos",
-        description: "Preencha todos os dados obrigatórios",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    // Validar CPF (11 dígitos)
-    const cpfLimpo = getUnmaskedCpf();
-    if (cpfLimpo.length !== 11) {
-      toast({
-        title: "CPF inválido",
-        description: "O CPF deve conter 11 dígitos",
+        title: "Dados inválidos",
+        description: "Verifique os dados informados antes de continuar",
         variant: "destructive"
       });
       return;
@@ -323,7 +338,14 @@ const Pagamento = () => {
                         placeholder="seu@email.com"
                         value={dadosCliente.email}
                         onChange={(e) => setDadosCliente({...dadosCliente, email: e.target.value})}
+                        className={emailValido === false ? "border-red-500" : ""}
                       />
+                      {emailValido === false && (
+                        <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+                          <AlertCircle className="h-3 w-3" />
+                          Email inválido
+                        </p>
+                      )}
                     </div>
                     
                     <div>
@@ -334,7 +356,14 @@ const Pagamento = () => {
                         value={cpf}
                         onChange={(e) => handleCpfChange(e.target.value)}
                         maxLength={14}
+                        className={cpfValido === false ? "border-red-500" : ""}
                       />
+                      {cpfValido === false && (
+                        <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+                          <AlertCircle className="h-3 w-3" />
+                          CPF inválido
+                        </p>
+                      )}
                     </div>
                   </div>
 
@@ -482,7 +511,7 @@ const Pagamento = () => {
                     className="w-full" 
                     size="lg"
                     onClick={handlePagamento}
-                    disabled={processando}
+                    disabled={processando || !podeProcessar}
                   >
                     {processando ? (
                       "Processando..."
