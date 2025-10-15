@@ -8,6 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useCategoriesData } from "@/hooks/useCategoriesData";
 
 interface EditProfissionalModalProps {
   open: boolean;
@@ -18,15 +19,15 @@ interface EditProfissionalModalProps {
 
 export function EditProfissionalModal({ open, onClose, profissional, onUpdate }: EditProfissionalModalProps) {
   const { toast } = useToast();
+  const { categories, subcategories } = useCategoriesData();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     nome: '',
     email: '',
     whatsapp: '',
-    categoria: '',
-    especialidade: '',
+    categoria_slug: '',
+    subcategoria_slug: '',
     descricao: '',
-    experiencia_anos: 0,
     cidade: '',
     uf: '',
     ativo: true,
@@ -40,10 +41,9 @@ export function EditProfissionalModal({ open, onClose, profissional, onUpdate }:
         nome: profissional.nome || '',
         email: profissional.email || '',
         whatsapp: profissional.whatsapp || '',
-        categoria: profissional.categoria || '',
-        especialidade: profissional.especialidade || '',
+        categoria_slug: profissional.categoria_slug || '',
+        subcategoria_slug: profissional.subcategoria_slug || '',
         descricao: profissional.descricao || '',
-        experiencia_anos: profissional.experiencia_anos || 0,
         cidade: profissional.cidade || '',
         uf: profissional.uf || '',
         ativo: profissional.ativo ?? true,
@@ -129,16 +129,6 @@ export function EditProfissionalModal({ open, onClose, profissional, onUpdate }:
                   placeholder="(11) 99999-9999"
                 />
               </div>
-              <div>
-                <Label htmlFor="experiencia">Anos de Experiência</Label>
-                <Input
-                  id="experiencia"
-                  type="number"
-                  min="0"
-                  value={formData.experiencia_anos}
-                  onChange={(e) => setFormData({ ...formData, experiencia_anos: parseInt(e.target.value) })}
-                />
-              </div>
             </div>
           </div>
 
@@ -147,22 +137,42 @@ export function EditProfissionalModal({ open, onClose, profissional, onUpdate }:
             <h3 className="text-lg font-medium">Informações Profissionais</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="categoria">Categoria</Label>
-                <Input
-                  id="categoria"
-                  value={formData.categoria}
-                  onChange={(e) => setFormData({ ...formData, categoria: e.target.value })}
-                  placeholder="Ex: Pedreiro, Eletricista..."
-                />
+                <Label htmlFor="categoria">Categoria *</Label>
+                <Select 
+                  value={formData.categoria_slug} 
+                  onValueChange={(val) => setFormData({ ...formData, categoria_slug: val, subcategoria_slug: '' })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione a categoria" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.slug}>{cat.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div>
-                <Label htmlFor="especialidade">Especialidade</Label>
-                <Input
-                  id="especialidade"
-                  value={formData.especialidade}
-                  onChange={(e) => setFormData({ ...formData, especialidade: e.target.value })}
-                  placeholder="Área de especialização"
-                />
+                <Label htmlFor="subcategoria">Subcategoria</Label>
+                <Select 
+                  value={formData.subcategoria_slug} 
+                  onValueChange={(val) => setFormData({ ...formData, subcategoria_slug: val })}
+                  disabled={!formData.categoria_slug}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={!formData.categoria_slug ? "Selecione a categoria primeiro" : "Selecione a subcategoria"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {subcategories
+                      .filter(sub => {
+                        const category = categories.find(c => c.slug === formData.categoria_slug);
+                        return category && sub.category_id === category.id;
+                      })
+                      .map((sub) => (
+                        <SelectItem key={sub.id} value={sub.slug}>{sub.name}</SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             <div>

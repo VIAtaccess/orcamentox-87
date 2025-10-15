@@ -48,13 +48,13 @@ const Perfil = () => {
     if (profile.whatsapp) {
       phoneMask.setValue(phoneMask.formatPhone(profile.whatsapp));
     }
-  }, [profile.whatsapp]);
+  }, [profile.whatsapp, phoneMask]);
 
   useEffect(() => {
     if (profile.cpf_cnpj) {
       cpfMask.setValue(cpfMask.formatCpf(profile.cpf_cnpj));
     }
-  }, [profile.cpf_cnpj]);
+  }, [profile.cpf_cnpj, cpfMask]);
 
   useEffect(() => {
     const loadProfile = async () => {

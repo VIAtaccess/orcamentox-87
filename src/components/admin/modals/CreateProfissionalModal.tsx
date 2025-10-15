@@ -5,8 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabaseClient";
+import { useCategoriesData } from "@/hooks/useCategoriesData";
 
 interface CreateProfissionalModalProps {
   open: boolean;
@@ -16,12 +18,14 @@ interface CreateProfissionalModalProps {
 
 export function CreateProfissionalModal({ open, onClose, onCreated }: CreateProfissionalModalProps) {
   const { toast } = useToast();
+  const { categories, subcategories } = useCategoriesData();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     nome: '',
     email: '',
     whatsapp: '',
-    categoria: '',
+    categoria_slug: '',
+    subcategoria_slug: '',
     cidade: '',
     uf: '',
     descricao: '',
@@ -52,7 +56,8 @@ export function CreateProfissionalModal({ open, onClose, onCreated }: CreateProf
         nome: '',
         email: '',
         whatsapp: '',
-        categoria: '',
+        categoria_slug: '',
+        subcategoria_slug: '',
         cidade: '',
         uf: '',
         descricao: '',
@@ -113,13 +118,42 @@ export function CreateProfissionalModal({ open, onClose, onCreated }: CreateProf
                 />
               </div>
               <div>
-                <Label htmlFor="categoria">Categoria</Label>
-                <Input
-                  id="categoria"
-                  value={formData.categoria}
-                  onChange={(e) => setFormData({ ...formData, categoria: e.target.value })}
-                  placeholder="Ex: Pedreiro, Eletricista..."
-                />
+                <Label htmlFor="categoria">Categoria *</Label>
+                <Select 
+                  value={formData.categoria_slug} 
+                  onValueChange={(val) => setFormData({ ...formData, categoria_slug: val, subcategoria_slug: '' })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione a categoria" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.slug}>{cat.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="subcategoria">Subcategoria</Label>
+                <Select 
+                  value={formData.subcategoria_slug} 
+                  onValueChange={(val) => setFormData({ ...formData, subcategoria_slug: val })}
+                  disabled={!formData.categoria_slug}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={!formData.categoria_slug ? "Selecione a categoria primeiro" : "Selecione a subcategoria"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {subcategories
+                      .filter(sub => {
+                        const category = categories.find(c => c.slug === formData.categoria_slug);
+                        return category && sub.category_id === category.id;
+                      })
+                      .map((sub) => (
+                        <SelectItem key={sub.id} value={sub.slug}>{sub.name}</SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </div>
