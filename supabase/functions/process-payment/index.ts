@@ -30,13 +30,21 @@ serve(async (req) => {
     } = await req.json();
 
     console.log('Iniciando processamento de pagamento:', { paymentType, planData });
+    
+    // Validar CPF
+    const cleanCpf = customerData.cpf.replace(/\D/g, '');
+    console.log('CPF recebido:', { original: customerData.cpf, limpo: cleanCpf, tamanho: cleanCpf.length });
+    
+    if (cleanCpf.length !== 11) {
+      throw new Error('CPF deve conter 11 dígitos');
+    }
 
     // 1. Criar ou buscar cliente no Asaas
     let customerId = null;
     
     // Verificar se cliente já existe
     const searchResponse = await fetch(
-      `${apiBaseUrl}/customers?cpfCnpj=${customerData.cpf.replace(/\D/g, '')}`,
+      `${apiBaseUrl}/customers?cpfCnpj=${cleanCpf}`,
       {
         headers: {
           'access_token': asaasToken,
@@ -57,10 +65,12 @@ serve(async (req) => {
       const customerPayload = {
         name: customerData.nome.toUpperCase(),
         email: customerData.email.toLowerCase(),
-        cpfCnpj: customerData.cpf.replace(/\D/g, ''),
+        cpfCnpj: cleanCpf,
         mobilePhone: customerData.telefone?.replace(/\D/g, '') || '',
         notificationDisabled: true
       };
+
+      console.log('Criando cliente no Asaas:', { ...customerPayload, cpfCnpj: cleanCpf });
 
       const createCustomerResponse = await fetch(`${apiBaseUrl}/customers`, {
         method: 'POST',
@@ -131,7 +141,7 @@ serve(async (req) => {
       paymentData.creditCardHolderInfo = {
         name: cardData.nome.toUpperCase(),
         email: customerData.email.toLowerCase(),
-        cpfCnpj: customerData.cpf.replace(/\D/g, ''),
+        cpfCnpj: cleanCpf,
         postalCode: '00000000',
         addressNumber: '0',
         addressComplement: null,

@@ -85,6 +85,17 @@ const Pagamento = () => {
       return;
     }
 
+    // Validar CPF (11 dígitos)
+    const cpfLimpo = getUnmaskedCpf();
+    if (cpfLimpo.length !== 11) {
+      toast({
+        title: "CPF inválido",
+        description: "O CPF deve conter 11 dígitos",
+        variant: "destructive"
+      });
+      return;
+    }
+
     if (metodo === 'cartao') {
       if (!dadosCartao.numero || !dadosCartao.nome || !dadosCartao.validade || !dadosCartao.cvv) {
         toast({
