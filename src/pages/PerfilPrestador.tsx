@@ -93,6 +93,17 @@ const PerfilPrestador = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
+      // Buscar ID do prestador pelo email
+      const { data: prestadorData } = await supabase
+        .from('profissionais')
+        .select('id')
+        .eq('email', user.email)
+        .single();
+
+      if (!prestadorData) {
+        throw new Error('Prestador não encontrado');
+      }
+
       const { error } = await supabase
         .from('profissionais')
         .update({
@@ -110,7 +121,7 @@ const PerfilPrestador = () => {
           imagem_servico_2: profile.imagem_servico_2,
           imagem_servico_3: profile.imagem_servico_3
         })
-        .eq('email', user.email);
+        .eq('id', prestadorData.id);
 
       if (error) throw error;
 

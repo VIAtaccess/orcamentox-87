@@ -9,14 +9,17 @@ import {
   CheckCircle,
   Clock,
   DollarSign,
-  TrendingUp
+  TrendingUp,
+  ExternalLink
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from "@/hooks/use-toast";
+import { generateFriendlyUrl } from '@/utils/urlUtils';
 
 const DashboardPrestador = () => {
   const [profileName, setProfileName] = useState<string>('');
+  const [prestadorData, setPrestadorData] = useState<any>(null);
   const [stats, setStats] = useState({
     solicitacoesAceitas: 0,
     propostas: 0,
@@ -42,6 +45,7 @@ const DashboardPrestador = () => {
 
         if (prestador) {
           setProfileName(prestador.nome || '');
+          setPrestadorData(prestador);
           
           // Buscar estatísticas reais
           const [{ count: totalPropostas }, { count: solicitacoesAtendidas }] = await Promise.all([
@@ -77,6 +81,17 @@ const DashboardPrestador = () => {
 
     loadPrestadorData();
   }, [toast]);
+
+  const handleViewMyPage = () => {
+    if (prestadorData?.cidade && prestadorData?.categoria_slug && prestadorData?.id) {
+      const friendlyUrl = generateFriendlyUrl(
+        prestadorData.cidade, 
+        prestadorData.categoria_slug, 
+        prestadorData.id
+      );
+      window.open(friendlyUrl, '_blank');
+    }
+  };
 
   if (loading) {
     return (
@@ -130,6 +145,15 @@ const DashboardPrestador = () => {
                   <Star className="h-4 w-4 text-yellow-500 mr-1" />
                   <span className="text-sm font-medium">{stats.avaliacaoMedia.toFixed(1)}</span>
                 </div>
+                <Button 
+                  variant="outline" 
+                  onClick={handleViewMyPage}
+                  className="w-full mt-4"
+                  disabled={!prestadorData?.cidade || !prestadorData?.categoria_slug}
+                >
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  Ver Minha Página
+                </Button>
               </div>
 
               <nav className="space-y-2">

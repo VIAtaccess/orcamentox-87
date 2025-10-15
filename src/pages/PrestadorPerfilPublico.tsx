@@ -66,9 +66,22 @@ const PrestadorPerfilPublico = () => {
         <div className="bg-white rounded-3xl shadow-lg p-8">
           {/* Top Section */}
           <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">{prestador.nome}</h1>
-              <p className="text-gray-600">{prestador.cidade}{prestador.uf ? ` - ${prestador.uf}` : ''}</p>
+            <div className="flex items-center gap-4">
+              {prestador.foto_url ? (
+                <img 
+                  src={prestador.foto_url} 
+                  alt={prestador.nome}
+                  className="w-20 h-20 rounded-full object-cover border-2 border-primary"
+                />
+              ) : (
+                <div className="w-20 h-20 rounded-full bg-primary flex items-center justify-center text-white text-2xl font-bold">
+                  {prestador.nome.charAt(0).toUpperCase()}
+                </div>
+              )}
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">{prestador.nome}</h1>
+                <p className="text-gray-600">{prestador.cidade}{prestador.uf ? ` - ${prestador.uf}` : ''}</p>
+              </div>
             </div>
             <div className="flex items-center">
               <Star className="h-5 w-5 text-yellow-500 mr-1" />

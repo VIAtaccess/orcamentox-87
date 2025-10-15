@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
 import { FileText, Shapes } from 'lucide-react';
 import { useCategoriesData } from '@/hooks/useCategoriesData';
+import { getCategoryIcon } from '@/utils/categoryIconMap';
 
 const CategoriesSection = () => {
   const { categoriesWithSubcategories, loading } = useCategoriesData();
@@ -41,6 +42,7 @@ const CategoriesSection = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-slide-up">
           {categoriesWithSubcategories.map((category, index) => {
+            const CategoryIcon = getCategoryIcon(category.slug);
             return (
               <div 
                 key={category.id}
@@ -48,7 +50,7 @@ const CategoriesSection = () => {
                 style={{ animationDelay: `${index * 100}ms` }}
               >
                 <div className={`${category.color || 'bg-primary'} w-16 h-16 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
-                  <Shapes className="h-8 w-8 text-white" />
+                  <CategoryIcon className="h-8 w-8 text-white" />
                 </div>
                 
                 <div className="space-y-4">
