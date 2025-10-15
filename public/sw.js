@@ -1,21 +1,18 @@
 // Service Worker for OrçamentoX PWA
 const CACHE_NAME = 'orcamentox-v1';
-const urlsToCache = [
-  '/',
-  '/static/js/bundle.js',
-  '/static/css/main.css',
-  '/favicon-x.png',
-  '/manifest.json'
-];
 
 // Install event
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
-        return cache.addAll(urlsToCache);
+        // Cache only essential resources that we know exist
+        return cache.add('/').catch(() => {
+          console.log('Failed to cache root, continuing anyway');
+        });
       })
   );
+  self.skipWaiting();
 });
 
 // Fetch event
