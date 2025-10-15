@@ -17,7 +17,7 @@ export const useAdminStats = () => {
         acessosData
       ] = await Promise.all([
         supabase.from("clientes").select("id, created_at").order("created_at", { ascending: false }),
-        supabase.from("profissionais").select("id, nome, categoria, created_at").order("created_at", { ascending: false }),
+        supabase.from("profissionais").select("id, nome, categoria_slug, created_at").order("created_at", { ascending: false }),
         supabase.from("solicitacoes_orcamento").select("id, status, created_at").order("created_at", { ascending: false }),
         supabase.from("propostas").select("id, status, created_at").order("created_at", { ascending: false }),
         supabase.from("avaliacoes").select("nota, created_at").order("created_at", { ascending: false }),

@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabaseClient";
+import { useCategoriesData } from "@/hooks/useCategoriesData";
 
 interface EditSolicitacaoModalProps {
   open: boolean;
@@ -17,6 +18,7 @@ interface EditSolicitacaoModalProps {
 
 export function EditSolicitacaoModal({ open, onClose, solicitacao, onUpdate }: EditSolicitacaoModalProps) {
   const { toast } = useToast();
+  const { categories, subcategories } = useCategoriesData();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     titulo: '',
@@ -24,6 +26,8 @@ export function EditSolicitacaoModal({ open, onClose, solicitacao, onUpdate }: E
     endereco: '',
     cidade: '',
     uf: '',
+    categoria_id: '',
+    subcategoria_id: '',
     urgencia: 'media',
     orcamento_estimado: '',
     max_propostas: 5,
@@ -41,6 +45,8 @@ export function EditSolicitacaoModal({ open, onClose, solicitacao, onUpdate }: E
         endereco: solicitacao.endereco || '',
         cidade: solicitacao.cidade || '',
         uf: solicitacao.uf || '',
+        categoria_id: solicitacao.categoria_id || '',
+        subcategoria_id: solicitacao.subcategoria_id || '',
         urgencia: solicitacao.urgencia || 'media',
         orcamento_estimado: solicitacao.orcamento_estimado || '',
         max_propostas: solicitacao.max_propostas || 5,
@@ -125,6 +131,45 @@ export function EditSolicitacaoModal({ open, onClose, solicitacao, onUpdate }: E
               onChange={(e) => setFormData({ ...formData, endereco: e.target.value })}
               required
             />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="categoria">Categoria</Label>
+              <Select 
+                value={formData.categoria_id} 
+                onValueChange={(val) => setFormData({ ...formData, categoria_id: val, subcategoria_id: '' })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione a categoria" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div>
+              <Label htmlFor="subcategoria">Subcategoria</Label>
+              <Select 
+                value={formData.subcategoria_id} 
+                onValueChange={(val) => setFormData({ ...formData, subcategoria_id: val })}
+                disabled={!formData.categoria_id}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={!formData.categoria_id ? "Selecione a categoria primeiro" : "Selecione a subcategoria"} />
+                </SelectTrigger>
+                <SelectContent>
+                  {subcategories
+                    .filter(sub => sub.category_id === formData.categoria_id)
+                    .map((sub) => (
+                      <SelectItem key={sub.id} value={sub.id}>{sub.name}</SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">

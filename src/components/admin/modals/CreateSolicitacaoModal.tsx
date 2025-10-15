@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabaseClient";
+import { useCategoriesData } from "@/hooks/useCategoriesData";
 
 interface CreateSolicitacaoModalProps {
   open: boolean;
@@ -16,6 +17,7 @@ interface CreateSolicitacaoModalProps {
 
 export function CreateSolicitacaoModal({ open, onClose, onCreated }: CreateSolicitacaoModalProps) {
   const { toast } = useToast();
+  const { categories, subcategories } = useCategoriesData();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     titulo: '',
@@ -25,6 +27,9 @@ export function CreateSolicitacaoModal({ open, onClose, onCreated }: CreateSolic
     whatsapp_cliente: '',
     cidade: '',
     uf: '',
+    endereco: '',
+    categoria_id: '',
+    subcategoria_id: '',
     orcamento_estimado: '',
     urgencia: 'media',
     status: 'ativa'
@@ -56,6 +61,9 @@ export function CreateSolicitacaoModal({ open, onClose, onCreated }: CreateSolic
         whatsapp_cliente: '',
         cidade: '',
         uf: '',
+        endereco: '',
+        categoria_id: '',
+        subcategoria_id: '',
         orcamento_estimado: '',
         urgencia: 'media',
         status: 'ativa'
@@ -99,6 +107,55 @@ export function CreateSolicitacaoModal({ open, onClose, onCreated }: CreateSolic
               rows={3}
               required
             />
+          </div>
+
+          <div>
+            <Label htmlFor="endereco">Endereço</Label>
+            <Input
+              id="endereco"
+              value={formData.endereco}
+              onChange={(e) => setFormData({ ...formData, endereco: e.target.value })}
+              required
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="categoria">Categoria</Label>
+              <Select 
+                value={formData.categoria_id} 
+                onValueChange={(val) => setFormData({ ...formData, categoria_id: val, subcategoria_id: '' })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione a categoria" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div>
+              <Label htmlFor="subcategoria">Subcategoria</Label>
+              <Select 
+                value={formData.subcategoria_id} 
+                onValueChange={(val) => setFormData({ ...formData, subcategoria_id: val })}
+                disabled={!formData.categoria_id}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={!formData.categoria_id ? "Selecione a categoria primeiro" : "Selecione a subcategoria"} />
+                </SelectTrigger>
+                <SelectContent>
+                  {subcategories
+                    .filter(sub => sub.category_id === formData.categoria_id)
+                    .map((sub) => (
+                      <SelectItem key={sub.id} value={sub.id}>{sub.name}</SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <div>
