@@ -1,24 +1,39 @@
 // Utility functions for sending WhatsApp notifications
 import { supabase } from '@/integrations/supabase/client';
 
-export const sendWhatsAppMessage = async (recipients: string[], message: string): Promise<void> => {
+export const sendWhatsAppMessage = async (recipients: string[], message: string): Promise<{ success: number; failed: number }> => {
   try {
-    console.log('Enviando WhatsApp para:', recipients);
-    console.log('Mensagem:', message);
+    console.log('Enviando WhatsApp para:', recipients.length, 'destinatários');
+
+    let success = 0;
+    let failed = 0;
 
     // Enviar via Edge Function para cada destinatário
     for (const recipient of recipients) {
-      await supabase.functions.invoke('send-whatsapp-notifications', {
-        body: {
-          whatsapp_number: recipient,
-          message: message
+      try {
+        const { error } = await supabase.functions.invoke('send-whatsapp-notifications', {
+          body: {
+            whatsapp_number: recipient,
+            message: message
+          }
+        });
+        
+        if (error) {
+          console.error('Erro ao enviar para', recipient, ':', error);
+          failed++;
+        } else {
+          success++;
         }
-      });
+      } catch (err) {
+        console.error('Erro ao enviar para', recipient, ':', err);
+        failed++;
+      }
     }
     
-    console.log('WhatsApp messages enviadas com sucesso');
+    console.log(`WhatsApp: ${success} enviadas com sucesso, ${failed} falharam`);
+    return { success, failed };
   } catch (error) {
-    console.error('Error sending WhatsApp message:', error);
+    console.error('Error sending WhatsApp messages:', error);
     throw error;
   }
 };
@@ -27,14 +42,14 @@ export const notifyProvidersNewRequest = async (
   titulo: string,
   solicitacaoId: string,
   providersWhatsApp: string[]
-): Promise<void> => {
+): Promise<{ success: number; failed: number }> => {
   const message = `🎯 Novo orçamento disponível! "${titulo}" 
   
 📋 Acesse agora e envie sua proposta: https://orcamentox.lovable.app/orcamento/${solicitacaoId}
 
 ⏰ Seja rápido! As melhores oportunidades são aproveitadas primeiro! 💼✨`;
 
-  await sendWhatsAppMessage(providersWhatsApp, message);
+  return await sendWhatsAppMessage(providersWhatsApp, message);
 };
 
 export const notifyClientNewProposal = async (

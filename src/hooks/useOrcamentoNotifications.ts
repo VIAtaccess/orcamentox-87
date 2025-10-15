@@ -54,9 +54,16 @@ export const useOrcamentoNotifications = () => {
       }
 
       console.log('Enviando notificações WhatsApp...');
-      await notifyProvidersNewRequest(titulo, solicitacaoId, whatsappNumbers);
+      const result = await notifyProvidersNewRequest(titulo, solicitacaoId, whatsappNumbers);
       
-      toast.success(`${whatsappNumbers.length} prestadores notificados via WhatsApp!`);
+      // Mostrar apenas um toast com o resultado consolidado
+      if (result.success > 0) {
+        toast.success(`✅ ${result.success} ${result.success === 1 ? 'prestador notificado' : 'prestadores notificados'} via WhatsApp!`);
+      }
+      
+      if (result.failed > 0) {
+        toast.warning(`⚠️ ${result.failed} ${result.failed === 1 ? 'notificação falhou' : 'notificações falharam'}`);
+      }
     } catch (error) {
       console.error('Erro ao enviar notificações:', error);
       toast.error('Erro ao enviar notificações WhatsApp');
