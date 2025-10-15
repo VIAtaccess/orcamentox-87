@@ -28,7 +28,9 @@ const Pagamento = () => {
   const [metodo, setMetodo] = useState('cartao');
   const [processando, setProcessando] = useState(false);
   const [pagamentoAprovado, setPagamentoAprovado] = useState(false);
-  const [pixData, setPixData] = useState<{qrCode?: string; copyPaste?: string} | null>(null);
+  const [pixData, setPixData] = useState<{qrCode?: string; copyPaste?: string; paymentId?: string} | null>(null);
+  const [tempoRestante, setTempoRestante] = useState(300); // 5 minutos em segundos
+  const [verificandoPagamento, setVerificandoPagamento] = useState(false);
   
   const { value: cpf, handleChange: handleCpfChange, getUnmaskedValue: getUnmaskedCpf } = useCpfMask('');
   const { value: telefone, handleChange: handleTelefoneChange } = usePhoneMask('');
@@ -101,6 +103,95 @@ const Pagamento = () => {
     fetchPlano();
   }, [planoId, toast]);
 
+  // Timer de 5 minutos para PIX
+  useEffect(() => {
+    if (!pixData || !verificandoPagamento) return;
+
+    const interval = setInterval(() => {
+      setTempoRestante((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          handlePixTimeout();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [pixData, verificandoPagamento]);
+
+  // Verificação periódica do status do pagamento PIX
+  useEffect(() => {
+    if (!pixData?.paymentId || !verificandoPagamento) return;
+
+    const checkPayment = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        const response = await fetch(
+          `https://kyvqhdrcscfuxkprceem.supabase.co/functions/v1/process-payment/check-payment/${pixData.paymentId}`,
+          {
+            headers: {
+              'Authorization': `Bearer ${session?.access_token || ''}`
+            }
+          }
+        );
+
+        const data = await response.json();
+
+        if (data.paid) {
+          setVerificandoPagamento(false);
+          setPagamentoAprovado(true);
+          toast({
+            title: "Pagamento confirmado!",
+            description: "Seu pagamento PIX foi confirmado. Assinatura ativada!",
+          });
+          setTimeout(() => navigate('/dashboard'), 2000);
+        }
+      } catch (error) {
+        console.error('Erro ao verificar pagamento:', error);
+      }
+    };
+
+    // Verificar a cada 10 segundos
+    const interval = setInterval(checkPayment, 10000);
+    
+    // Verificar imediatamente
+    checkPayment();
+
+    return () => clearInterval(interval);
+  }, [pixData?.paymentId, verificandoPagamento, navigate, toast]);
+
+  const handlePixTimeout = async () => {
+    if (!pixData?.paymentId) return;
+
+    toast({
+      title: "Tempo esgotado",
+      description: "O tempo para pagamento expirou. Redirecionando...",
+      variant: "destructive"
+    });
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      // Cancelar o pagamento no Asaas
+      await fetch(
+        `https://kyvqhdrcscfuxkprceem.supabase.co/functions/v1/process-payment/cancel-payment/${pixData.paymentId}`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${session?.access_token || ''}`
+          }
+        }
+      );
+    } catch (error) {
+      console.error('Erro ao cancelar pagamento:', error);
+    }
+
+    setTimeout(() => navigate('/planos'), 2000);
+  };
+
   const handlePagamento = async () => {
     if (!podeProcessar) {
       toast({
@@ -152,11 +243,14 @@ const Pagamento = () => {
         if (metodo === 'pix') {
           setPixData({
             qrCode: data.pixQrCode,
-            copyPaste: data.pixCopyPaste
+            copyPaste: data.pixCopyPaste,
+            paymentId: data.paymentId
           });
+          setVerificandoPagamento(true);
+          setTempoRestante(300); // Resetar para 5 minutos
           toast({
             title: "PIX gerado com sucesso!",
-            description: "Escaneie o QR Code ou copie o código para pagar. Após o pagamento, sua assinatura será ativada automaticamente.",
+            description: "Escaneie o QR Code ou copie o código. Verificando pagamento automaticamente...",
           });
         } else {
           if (data.approved) {
@@ -475,7 +569,12 @@ const Pagamento = () => {
                 {/* Exibir QR Code PIX */}
                 {pixData && (
                   <div className="space-y-4 p-6 bg-blue-50 dark:bg-blue-950 rounded-lg">
-                    <h3 className="font-bold text-lg text-center">Escaneie o QR Code</h3>
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-bold text-lg">Escaneie o QR Code</h3>
+                      <div className="text-sm font-medium">
+                        Tempo restante: {Math.floor(tempoRestante / 60)}:{(tempoRestante % 60).toString().padStart(2, '0')}
+                      </div>
+                    </div>
                     
                     {pixData.qrCode && (
                       <div className="flex justify-center">
@@ -501,9 +600,22 @@ const Pagamento = () => {
                       </div>
                     </div>
                     
-                    <p className="text-sm text-center text-muted-foreground">
-                      O pagamento será confirmado automaticamente após o recebimento
-                    </p>
+                    <div className="bg-white dark:bg-gray-800 p-4 rounded-lg">
+                      <p className="text-sm text-center text-muted-foreground mb-2">
+                        {verificandoPagamento ? (
+                          <span className="flex items-center justify-center gap-2">
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                            Verificando pagamento automaticamente...
+                          </span>
+                        ) : (
+                          "Aguardando confirmação do pagamento"
+                        )}
+                      </p>
+                      <p className="text-xs text-center text-muted-foreground">
+                        O pagamento será confirmado automaticamente após o recebimento.
+                        Esta página irá atualizar quando o pagamento for detectado.
+                      </p>
+                    </div>
                   </div>
                 )}
 

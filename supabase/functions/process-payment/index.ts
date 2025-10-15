@@ -21,6 +21,72 @@ serve(async (req) => {
       ? 'https://api.asaas.com/v3'
       : 'https://api-sandbox.asaas.com/v3';
 
+    const url = new URL(req.url);
+    const path = url.pathname;
+
+    // Rota para consultar status do pagamento
+    if (path.includes('/check-payment/') && req.method === 'GET') {
+      const paymentId = path.split('/check-payment/')[1];
+      
+      console.log('Consultando status do pagamento:', paymentId);
+      
+      const response = await fetch(`${apiBaseUrl}/payments/${paymentId}`, {
+        headers: {
+          'access_token': asaasToken,
+          'accept': 'application/json',
+          'User-Agent': 'LovableApp/1.0'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Erro ao consultar pagamento');
+      }
+
+      const payment = await response.json();
+      console.log('Status do pagamento:', payment.status);
+
+      return new Response(JSON.stringify({
+        success: true,
+        status: payment.status,
+        paid: payment.status === 'CONFIRMED' || payment.status === 'RECEIVED'
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Rota para cancelar pagamento
+    if (path.includes('/cancel-payment/') && req.method === 'DELETE') {
+      const paymentId = path.split('/cancel-payment/')[1];
+      
+      console.log('Cancelando pagamento:', paymentId);
+      
+      const response = await fetch(`${apiBaseUrl}/payments/${paymentId}`, {
+        method: 'DELETE',
+        headers: {
+          'access_token': asaasToken,
+          'accept': 'application/json',
+          'User-Agent': 'LovableApp/1.0'
+        }
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        console.error('Erro ao cancelar pagamento:', error);
+        throw new Error('Erro ao cancelar pagamento');
+      }
+
+      const result = await response.json();
+      console.log('Pagamento cancelado:', result);
+
+      return new Response(JSON.stringify({
+        success: true,
+        deleted: result.deleted
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Rota principal de criação de pagamento
     const { 
       paymentType, 
       planData, 
