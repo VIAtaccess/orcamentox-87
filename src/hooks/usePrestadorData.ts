@@ -31,8 +31,8 @@ export const usePrestadorData = () => {
         .from('solicitacoes_orcamento')
         .select(`
           *,
-          categoria:categories(name, slug),
-          subcategoria:subcategories(name, slug)
+          categoria:categoria_id(name, slug),
+          subcategoria:subcategoria_id(name, slug)
         `)
         .eq('status', 'ativa')
         .eq('uf', prestador.uf)

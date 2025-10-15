@@ -70,7 +70,7 @@ export const SolicitacoesList = ({ userType, solicitacoes, isLoading }: Solicita
                        solicitacao.urgencia === 'media' ? 'Moderado' : 'Baixa Prioridade'}
                     </span>
                   </div>
-                  <p className="text-gray-600 mb-2">{solicitacao.categories?.name || solicitacao.categoria}</p>
+                  <p className="text-gray-600 mb-2">{solicitacao.categoria?.name || 'Categoria não especificada'}</p>
                   <div className="flex items-center space-x-4 text-sm text-gray-500">
                     <span className="flex items-center">
                       <Calendar className="h-4 w-4 mr-1" />
